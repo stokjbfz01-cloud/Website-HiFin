@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HiFin Mods</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://images.weserv.nl">
+  <link rel="dns-prefetch" href="https://images.weserv.nl">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="intro">
+  <div class="brand-intro">WELCOME TO</div>
+</div>
+<div class="main">
+  <div class="container">
+    <div class="title">HiFin Mods⚙️</div>
+    <div class="subtitle">❇️•kumpulan mods menarik•❇️<br>📦•dengan berbagai kategori dan tentunya gratis•✅</div>
+  </div>
+</div>
+<div class="app" id="app">
+  <div class="header">
+    <div class="header-top">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div class="logo">HiFin<br>Mods</div>
+        <button class="upload-btn">UPLOAD⏬</button>
+      </div>
+      <input class="search" id="search" placeholder="Cari mod...">
+    </div>
+  </div>
+  <div class="categories">
+    <div class="cat active" data-cat="ALL">ALL</div>
+    <div class="cat" data-cat="APK">APK</div>
+    <div class="cat" data-cat="GAME">GAME</div>
+    <div class="cat" data-cat="SCRIPT">SCRIPT</div>
+    <div class="cat" data-cat="DLL">DLL</div>
+  </div>
+  <div class="mods" id="modsList"></div>
+
+  <!-- PIN PANEL -->
+  <div class="panel" id="pinPanel">
+    <div class="box">
+      <h3>Masukkan PIN</h3>
+      <input type="password" id="pinInput">
+      <button id="pinCheckBtn">Masuk</button>
+      <button id="pinCloseBtn" style="background:#ccc; color:#333; margin-top:8px;">Tutup</button>
+    </div>
+  </div>
+
+  <!-- MENU PANEL -->
+  <div class="panel" id="menuPanel">
+    <div class="box">
+      <h3 id="menuTitle">Menu Developer</h3>
+      <div id="menuButtons" style="display:flex; gap:10px;"></div>
+    </div>
+  </div>
+
+  <!-- UPLOAD PANEL -->
+  <div class="panel" id="uploadPanel">
+    <div class="box">
+      <h3>Upload Mod</h3>
+      <input id="title" placeholder="Judul">
+      <textarea id="desc"></textarea>
+      <select id="category">
+        <option>APK</option>
+        <option>GAME</option>
+        <option>SCRIPT</option>
+        <option>DLL</option>
+      </select>
+      <input id="link" placeholder="Link Download">
+      <label>Gambar 1 (Thumbnail)</label>
+      <input type="file" id="image1">
+      <div class="progress-box">
+        <div class="progress-bar" id="progress1"></div>
+        <span id="progressText1">0%</span>
+      </div>
+      <label>Gambar 2</label>
+      <input type="file" id="image2">
+      <div class="progress-box">
+        <div class="progress-bar" id="progress2"></div>
+        <span id="progressText2">0%</span>
+      </div>
+      <label>Gambar 3</label>
+      <input type="file" id="image3">
+      <div class="progress-box">
+        <div class="progress-bar" id="progress3"></div>
+        <span id="progressText3">0%</span>
+      </div>
+      <label>Gambar 4</label>
+      <input type="file" id="image4">
+      <div class="progress-box">
+        <div class="progress-bar" id="progress4"></div>
+        <span id="progressText4">0%</span>
+      </div>
+      <div id="previewImages" style="display:flex; gap:5px; flex-wrap:wrap;"></div>
+      <div style="display:flex; gap:10px;">
+        <button id="saveModBtn">Simpan</button>
+        <button id="closeUploadBtn" style="background:#ccc;color:#333;">Kembali</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDIT PANEL -->
+  <div class="panel" id="editPanel">
+    <div class="box">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3>Edit Mod</h3>
+        <button id="closeEditPanelBtn" style="background:#ccc;color:#333;">Kembali</button>
+      </div>
+      <div id="editList"></div>
+      <hr style="margin:15px 0">
+    </div>
+  </div>
+
+  <!-- EDIT FORM PANEL -->
+  <div class="panel" id="editFormPanel">
+    <div class="box">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3>Edit Mod</h3>
+        <button id="closeEditFormBtn" style="background:#ccc;color:#333;">Kembali</button>
+      </div>
+      <select id="editCategory">
+        <option>APK</option>
+        <option>GAME</option>
+        <option>SCRIPT</option>
+        <option>DLL</option>
+      </select>
+      <input id="editTitle" placeholder="Judul">
+      <textarea id="editDesc"></textarea>
+      <input id="editLink" placeholder="Link Download">
+      <label>Gambar 1</label>
+      <input type="file" id="editImage1">
+      <div class="progress-box">
+        <div class="progress-bar" id="editProgress1"></div>
+        <span id="editProgressText1">0%</span>
+      </div>
+      <label>Gambar 2</label>
+      <input type="file" id="editImage2">
+      <div class="progress-box">
+        <div class="progress-bar" id="editProgress2"></div>
+        <span id="editProgressText2">0%</span>
+      </div>
+      <label>Gambar 3</label>
+      <input type="file" id="editImage3">
+      <div class="progress-box">
+        <div class="progress-bar" id="editProgress3"></div>
+        <span id="editProgressText3">0%</span>
+      </div>
+      <label>Gambar 4</label>
+      <input type="file" id="editImage4">
+      <div class="progress-box">
+        <div class="progress-bar" id="editProgress4"></div>
+        <span id="editProgressText4">0%</span>
+        <div id="editPreviewImages" style="display:flex; gap:5px; flex-wrap:wrap;"></div>
+      </div>
+      <button id="updateModBtn">Simpan Perubahan</button>
+      <button id="closeEditFormBottomBtn" style="background:#ccc;color:#333;margin-top:8px;">Kembali</button>
+    </div>
+  </div>
+
+  <!-- DETAIL PANEL -->
+  <div id="detailPanel">
+    <div id="detailContent">
+      <div style="display:flex; align-items:center; padding:15px; border-bottom:1px solid #eee; font-weight:bold; font-size:18px;">
+        <span id="detailBackBtn" style="margin-right:10px;cursor:pointer;">🔙</span>
+        <span id="detailTitleTop"></span>
+      </div>
+      <div style="padding:15px; max-width:700px; margin:auto;">
+        <div style="position:relative; width:100%; aspect-ratio:16/9; background:#eee; border-radius:10px; overflow:hidden;">
+          <img id="detailImg" style="width:100%; height:100%; object-fit:cover;">
+          <button id="prevImgBtn" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.4); border:none; color:white; font-size:18px; padding:6px 10px; border-radius:50%;">❮</button>
+          <button id="nextImgBtn" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.4); border:none; color:white; font-size:18px; padding:6px 10px; border-radius:50%;">❯</button>
+          <span id="detailCategory" style="position:absolute; bottom:10px; left:10px; font-size:11px; background:linear-gradient(135deg,#ff5252,#ff1744); color:white; padding:5px 8px; border-radius:6px; box-shadow:0 2px 6px rgba(0,0,0,0.2);"></span>
+          <button id="detailDownloadSmall" style="position:absolute; bottom:10px; right:10px; padding:6px 10px; font-size:12px; border-radius:8px; background:linear-gradient(135deg,#66bb6a,#a5d6a7); color:white; border:none; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.3);">⬇ Download</button>
+        </div>
+        <div class="detail-title-box">
+          <h2 id="detailTitle"></h2>
+        </div>
+        <h4 style="margin-top:15px;">🧩 DESKRIPSI MOD</h4>
+        <p id="detailDesc" style="color:#555; line-height:1.6;"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase CDN -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+<!-- App JS dengan defer -->
+<script src="js/app.js" defer></script>
+
+<div id="loadingOverlay" style="position:fixed; top:60px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.7); padding:10px 20px; border-radius:10px; display:none; z-index:999999; color:white; font-size:25px;">⏳ Loading...</div>
+<div id="successPopup" style="position:fixed; top:75px; left:50%; transform:translateX(-50%) scale(0.5); font-size:40px; display:none; z-index:999999; transition:0.3s; background:white; padding:10px; border-radius:10px; box-shadow:0 5px 15px rgba(0,0,0,0.3);">✅</div>
+</body>
+</html>
