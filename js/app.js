@@ -287,7 +287,10 @@ function openDetail(index) {
 function checkPin() {
   const pin = pinInput.value;
   if (pin === "089514") {
+    // Selalu buka menuPanel dulu
     openPanel(menuPanel);  
+    
+    // Cek status login
     if (isAdminLoggedIn) {  
       showDeveloperMenu();  
     } else {  
@@ -296,9 +299,12 @@ function checkPin() {
         <button id="loginBtn">Login Admin</button>  
         <button id="closeMenuBtn" style="background:#ccc;color:#333;">Tutup</button>  
       `;  
-      document.getElementById("loginBtn").addEventListener("click", loginAdmin);  
-      document.getElementById("closeMenuBtn").addEventListener("click", closeMenu);  
+      document.getElementById("loginBtn").onclick = loginAdmin;  
+      document.getElementById("closeMenuBtn").onclick = closeMenu;  
     }
+    // Kosongkan input pin setelah berhasil
+    pinInput.value = "";
+    closePanel(pinPanel);
   } else {
     alert("PIN salah!");
   }
@@ -306,26 +312,51 @@ function checkPin() {
 
 async function saveMod() {
   if (uploadedImages.every(img => img === null)) return alert("Upload gambar dulu!");
+  
   loadingOverlay.style.display = "flex";
-  await db.collection("mods").add({
-    title: titleInput.value,
-    desc: descInput.value,
-    category: categorySelect.value,
-    link: linkInput.value,
-    images: uploadedImages.filter(x => x),
-    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-  });
-  loadingOverlay.style.display = "none";
-  successPopup.style.display = "block";
-  successPopup.style.transform = "translateX(-50%) scale(1)";
-  setTimeout(() => successPopup.style.display = "none", 3000);
-  uploadedImages = [null, null, null, null];
-  uploadPanel.style.display = "none";
-  menuPanel.style.display = "none";
-  editPanel.style.display = "none";
-  editFormPanel.style.display = "none";
-  unlockScroll();
+  
+  try {
+    await db.collection("mods").add({
+      title: titleInput.value,
+      desc: descInput.value,
+      category: categorySelect.value,
+      link: linkInput.value,
+      images: uploadedImages.filter(x => x),
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    loadingOverlay.style.display = "none";
+    successPopup.style.display = "block";
+    successPopup.style.transform = "translateX(-50%) scale(1)";
+    
+    setTimeout(() => {
+      successPopup.style.display = "none";
+    }, 3000);
+
+    // --- PERBAIKAN DI SINI ---
+    // 1. Reset data upload
+    uploadedImages = [null, null, null, null];
+    titleInput.value = "";
+    descInput.value = "";
+    linkInput.value = "";
+    previewImagesDiv.innerHTML = "";
+    document.querySelectorAll(".progress-bar").forEach(b => b.style.width = "0%");
+    document.querySelectorAll("[id^='progressText']").forEach(t => t.innerText = "0%");
+
+    // 2. Tutup semua panel menggunakan fungsi yang sudah ada
+    closePanel(uploadPanel);
+    closePanel(menuPanel);
+    closePanel(editPanel);
+    closePanel(editFormPanel);
+    
+    // Pastikan scroll kembali normal
+    unlockScroll();
+
+  } catch (error) {
+    loadingOverlay.style.display = "none";
+    alert("Gagal menyimpan: " + error.message);
+  }
 }
 
 function loadEditList() {
