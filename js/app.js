@@ -403,8 +403,10 @@ function selectEdit(index) {
   editDesc.value = mod.desc;
   editCategory.value = mod.category;
   editLink.value = mod.link;
-  editPanel.style.display = "none";
-  editFormPanel.style.display = "block";
+  
+  // Gunakan fungsi panel yang sudah ada agar konsisten
+  closePanel(editPanel);
+  openPanel(editFormPanel);
 }
 
 async function updateMod() {
@@ -413,30 +415,51 @@ async function updateMod() {
     return alert("Hanya admin yang bisa edit!");
   }
   if (editIndex === null) return alert("Pilih mod dulu!");
+  
   loadingOverlay.style.display = "flex";
-  const mod = mods[editIndex];
-  let finalImages = [...mod.images];
-  editUploadedImages.forEach((img, i) => {
-    if (img !== null) finalImages[i] = img;
-  });
-  await db.collection("mods").doc(mod.id).update({
-    title: editTitle.value,
-    desc: editDesc.value,
-    category: editCategory.value,
-    link: editLink.value,
-    images: finalImages,
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-  });
-  loadingOverlay.style.display = "none";
-  successPopup.style.display = "block";
-  successPopup.style.transform = "translate(-50%, -50%) scale(1)";
-  setTimeout(() => successPopup.style.display = "none", 3000);
-  editUploadedImages = [null, null, null, null];
-  editIndex = null;
-  editFormPanel.style.display = "none";
-  editPanel.style.display = "none";
-  menuPanel.style.display = "none";
-  unlockScroll();
+  
+  try {
+    const mod = mods[editIndex];
+    let finalImages = [...mod.images];
+    
+    // Update hanya gambar yang baru diupload
+    editUploadedImages.forEach((img, i) => {
+      if (img !== null) finalImages[i] = img;
+    });
+
+    await db.collection("mods").doc(mod.id).update({
+      title: editTitle.value,
+      desc: editDesc.value,
+      category: editCategory.value,
+      link: editLink.value,
+      images: finalImages,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    loadingOverlay.style.display = "none";
+    
+    // Tampilkan feedback sukses
+    successPopup.style.display = "block";
+    successPopup.style.transform = "translateX(-50%) scale(1)";
+    
+    setTimeout(() => {
+      successPopup.style.display = "none";
+    }, 2000);
+
+    // RESET & KEMBALI KE MENU DEVELOPER
+    editUploadedImages = [null, null, null, null];
+    editIndex = null;
+    
+    // Sembunyikan panel form edit
+    closePanel(editFormPanel); 
+    // Tampilkan kembali panel menu utama developer
+    openPanel(menuPanel);
+    showDeveloperMenu(); 
+
+  } catch (error) {
+    loadingOverlay.style.display = "none";
+    alert("Gagal update: " + error.message);
+  }
 }
 
 function loadModsRealtime() {
