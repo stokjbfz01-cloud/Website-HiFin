@@ -130,7 +130,19 @@ function previewImage(input, index, mode = "upload") {
   wrapper.dataset.mode = mode;
 }
 
-function updateDetailImage() { detailImg.src = currentImages[currentIndex]; }
+function updateDetailImage() { 
+  if (currentImages && currentImages[currentIndex]) {
+    const rawUrl = currentImages[currentIndex];
+    // Gunakan weserv.nl agar gambar diproses menjadi WebP dan melewati filter CSP dengan aman
+    const optimizedUrl = `https://images.weserv.nl/?url=${encodeURIComponent(rawUrl)}&w=800&fit=cover&output=webp&q=85`;
+    
+    detailImg.src = optimizedUrl;
+    
+    // Opsional: Berikan efek loading saat gambar berganti
+    detailImg.style.opacity = "0.5";
+    detailImg.onload = () => { detailImg.style.opacity = "1"; };
+  }
+}
 function openPin() {
   openPanel(pinPanel);
 }
@@ -247,18 +259,28 @@ function createCard(mod) {
 
 function openDetail(index) {
   const mod = mods[index];
-  currentImages = mod.images;
-  currentIndex = 0;
-  updateDetailImage();
+  if (!mod) return;
+
+  // Pastikan images adalah array, jika tidak ada gunakan array kosong
+  currentImages = Array.isArray(mod.images) ? mod.images : (mod.image ? [mod.image] : []);
+  
+  if (currentImages.length > 0) {
+    currentIndex = 0;
+    updateDetailImage();
+  } else {
+    detailImg.src = ""; // Clear jika tidak ada gambar
+  }
+
   detailTitle.innerText = mod.title;
   detailTitleTop.innerText = mod.title;
   detailDesc.innerText = mod.desc;
   detailCategorySpan.innerText = mod.category;
+
   const detailDownloadSmall = document.getElementById("detailDownloadSmall");
   detailDownloadSmall.onclick = () => window.open(mod.link);
+
   detailPanel.classList.add("active");
   detailPanel.scrollTop = 0;
-  window.scrollTo(0, 0);
   lockScroll();
 }
 
