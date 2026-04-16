@@ -10,6 +10,7 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
+const auth = firebase.auth();
 
 // Global variables
 let mods = [];
@@ -23,6 +24,8 @@ let unsubscribe = null;
 let uploadedImages = [null, null, null, null];
 let editUploadedImages = [null, null, null, null];
 let searchTimeout;
+let appReady = false;
+let isAdminLoggedIn = false;
 
 // DOM elements
 const pinPanel = document.getElementById("pinPanel");
@@ -114,7 +117,7 @@ function previewImage(input, index, mode = "upload") {
   img.style.borderRadius = "6px";
   img.src = URL.createObjectURL(file);
   const check = document.createElement("div");
-  check.innerText = "✅";
+  check.innerText = "✓";
   check.style.position = "absolute";
   check.style.top = "2px";
   check.style.right = "2px";
@@ -128,15 +131,56 @@ function previewImage(input, index, mode = "upload") {
 }
 
 function updateDetailImage() { detailImg.src = currentImages[currentIndex]; }
-function closeMenu() { menuPanel.style.display = "none"; }
-function closeUpload() { uploadPanel.style.display = "none"; menuPanel.style.display = "block"; }
-function closeEditPanel() { editPanel.style.display = "none"; menuPanel.style.display = "block"; }
-function closeEditForm() { editFormPanel.style.display = "none"; editPanel.style.display = "block"; editIndex = null; }
-function openPin() { pinPanel.style.display = "block"; }
-function closePin() { pinPanel.style.display = "none"; }
-function openUploadDirect() { uploadPanel.style.display = "block"; }
-function openUpload() { menuPanel.style.display = "none"; uploadPanel.style.display = "block"; }
-function openEdit() { menuPanel.style.display = "none"; editPanel.style.display = "block"; loadEditList(); }
+function openPin() {
+  openPanel(pinPanel);
+}
+
+function closePin() {
+  closePanel(pinPanel);
+}
+
+function openPanel(panel) {
+  panel.classList.add("active");
+  lockScroll();
+}
+
+function closePanel(panel) {
+  panel.classList.remove("active");
+  unlockScroll();
+}
+
+function closeMenu() {
+  closePanel(menuPanel);
+}
+
+function openUploadDirect() {
+  openPanel(uploadPanel);
+}
+
+function openUpload() {
+  closePanel(menuPanel);
+  openPanel(uploadPanel);
+}
+
+function closeUpload() {
+  closePanel(uploadPanel);
+}
+
+function openEdit() {
+  closePanel(menuPanel);
+  openPanel(editPanel);
+  loadEditList();
+}
+
+function closeEditPanel() {
+  closePanel(editPanel);
+}
+
+function closeEditForm() {
+  editFormPanel.classList.remove("active");
+  editPanel.classList.add("active");
+  editIndex = null;
+}
 
 function nextImg() {
   currentIndex = (currentIndex + 1) % currentImages.length;
@@ -156,34 +200,53 @@ function applyFilter() {
 }
 
 function renderMods(data) {
-  const fragment = document.createDocumentFragment();
-  data.forEach(mod => fragment.appendChild(createCard(mod)));
-  modsList.innerHTML = "";
-  modsList.appendChild(fragment);
+  // Gunakan Fast-Path Rendering
+  requestAnimationFrame(() => {
+    const fragment = document.createDocumentFragment();
+    
+    // Batasi render awal hanya untuk yang terlihat (jika data sangat banyak)
+    data.forEach(mod => {
+      fragment.appendChild(createCard(mod));
+    });
+
+    // Operasi DOM tunggal untuk meminimalisir reflow
+    modsList.innerHTML = "";
+    modsList.appendChild(fragment);
+    
+    // Force GPU untuk memproses layer baru
+    modsList.style.transform = 'translateZ(0)';
+  });
 }
 
 function createCard(mod) {
   const card = document.createElement("div");
   card.className = "card";
+  
+  // Menggunakan weserv.nl sebagai Cache Proxy & Image Optimizer
+  // Ini akan mengubah gambar ke WebP secara realtime dan meng-cache di CDN
+  const optimizedThumb = `https://images.weserv.nl/?url=${encodeURIComponent(mod.images[0])}&w=400&h=225&fit=cover&output=webp&q=80`;
+
   card.innerHTML = `
-    <div class="thumb">
-      <img loading="lazy" decoding="async" src="${mod.images[0] || 'https://via.placeholder.com/300x169?text=No+Image'}" onload="this.style.opacity=1" onerror="this.src='https://via.placeholder.com/300x169?text=Error'" style="opacity:0; transition:0.3s;">
+    <div class="thumb" style="background: #2c2c2c;">  
+      <img loading="eager" 
+           decoding="sync"  
+           src="${optimizedThumb}"  
+           onload="this.style.opacity=1"  
+           style="opacity:0; width:100%; height:100%; object-fit:cover;">  
     </div>
-    <div class="card-content">
-      <span class="badge">${mod.category}</span>
-      <h4 style="margin:5px 0">${mod.title}</h4>
-      <p style="font-size:12px; color:#666">${mod.desc}</p>
-      <button class="download-btn" data-index="${mods.indexOf(mod)}">View</button>
-    </div>
+    <div class="card-content">  
+      <span class="badge">${mod.category}</span>  
+      <h4 class="card-title">${mod.title}</h4>  
+      <p style="font-size:12px; color:#666">${mod.desc}</p>  
+      <button class="download-btn btn-text" data-index="${mods.indexOf(mod)}">SELENGKAPNYA</button>  
+    </div>  
   `;
   return card;
 }
 
+
 function openDetail(index) {
   const mod = mods[index];
-  detailPanel.style.display = "block";
-  detailPanel.scrollTop = 0;
-  window.scrollTo(0, 0);
   currentImages = mod.images;
   currentIndex = 0;
   updateDetailImage();
@@ -193,27 +256,29 @@ function openDetail(index) {
   detailCategorySpan.innerText = mod.category;
   const detailDownloadSmall = document.getElementById("detailDownloadSmall");
   detailDownloadSmall.onclick = () => window.open(mod.link);
+  detailPanel.classList.add("active");
+  detailPanel.scrollTop = 0;
+  window.scrollTo(0, 0);
+  lockScroll();
 }
 
 function checkPin() {
   const pin = pinInput.value;
-  pinPanel.style.display = "none";
-  menuPanel.style.display = "block";
-  menuButtons.innerHTML = "";
   if (pin === "089514") {
-    menuTitle.innerText = "Menu Developer";
-    menuButtons.innerHTML = `
-      <button id="uploadModBtn">Upload Mod</button>
-      <button id="editModBtn">Edit Mod</button>
-      <button id="closeMenuBtn" style="background:#ccc;color:#333;">Tutup</button>
-    `;
-    document.getElementById("uploadModBtn").addEventListener("click", openUpload);
-    document.getElementById("editModBtn").addEventListener("click", openEdit);
-    document.getElementById("closeMenuBtn").addEventListener("click", closeMenu);
+    openPanel(menuPanel);  
+    if (isAdminLoggedIn) {  
+      showDeveloperMenu();  
+    } else {  
+      menuTitle.innerText = "Panel - Login Developer🧩";  
+      menuButtons.innerHTML = `  
+        <button id="loginBtn">Login Admin</button>  
+        <button id="closeMenuBtn" style="background:#ccc;color:#333;">Tutup</button>  
+      `;  
+      document.getElementById("loginBtn").addEventListener("click", loginAdmin);  
+      document.getElementById("closeMenuBtn").addEventListener("click", closeMenu);  
+    }
   } else {
     alert("PIN salah!");
-    pinPanel.style.display = "block";
-    menuPanel.style.display = "none";
   }
 }
 
@@ -235,6 +300,10 @@ async function saveMod() {
   setTimeout(() => successPopup.style.display = "none", 3000);
   uploadedImages = [null, null, null, null];
   uploadPanel.style.display = "none";
+  menuPanel.style.display = "none";
+  editPanel.style.display = "none";
+  editFormPanel.style.display = "none";
+  unlockScroll();
 }
 
 function loadEditList() {
@@ -261,6 +330,10 @@ function loadEditList() {
     btn.addEventListener("click", async (e) => {
       const idx = parseInt(btn.dataset.index);
       if (confirm("Yakin mau hapus mod ini?")) {
+        const user = firebase.auth().currentUser;
+        if (!user || user.email !== "stokjbfz01@gmail.com") {
+          return alert("Hanya admin yang bisa hapus!");
+        }
         await db.collection("mods").doc(mods[idx].id).delete();
         alert("Mod berhasil dihapus!");
         loadModsRealtime();
@@ -282,11 +355,17 @@ function selectEdit(index) {
 }
 
 async function updateMod() {
+  const user = firebase.auth().currentUser;
+  if (!user || user.email !== "stokjbfz01@gmail.com") {
+    return alert("Hanya admin yang bisa edit!");
+  }
   if (editIndex === null) return alert("Pilih mod dulu!");
   loadingOverlay.style.display = "flex";
   const mod = mods[editIndex];
   let finalImages = [...mod.images];
-  editUploadedImages.forEach((img, i) => { if (img !== null) finalImages[i] = img; });
+  editUploadedImages.forEach((img, i) => {
+    if (img !== null) finalImages[i] = img;
+  });
   await db.collection("mods").doc(mod.id).update({
     title: editTitle.value,
     desc: editDesc.value,
@@ -300,7 +379,11 @@ async function updateMod() {
   successPopup.style.transform = "translate(-50%, -50%) scale(1)";
   setTimeout(() => successPopup.style.display = "none", 3000);
   editUploadedImages = [null, null, null, null];
-  closeEditForm();
+  editIndex = null;
+  editFormPanel.style.display = "none";
+  editPanel.style.display = "none";
+  menuPanel.style.display = "none";
+  unlockScroll();
 }
 
 function loadModsRealtime() {
@@ -322,26 +405,22 @@ function loadModsRealtime() {
 
 // Event Listeners (DOM sudah siap)
 document.addEventListener("DOMContentLoaded", () => {
-  // Logo
   document.querySelector(".logo").addEventListener("click", openPin);
-  // Upload button header
   document.querySelector(".upload-btn").addEventListener("click", openUploadDirect);
-  // Pin panel buttons
   document.getElementById("pinCheckBtn").addEventListener("click", checkPin);
   document.getElementById("pinCloseBtn").addEventListener("click", closePin);
-  // Save & close upload
   document.getElementById("saveModBtn").addEventListener("click", saveMod);
   document.getElementById("closeUploadBtn").addEventListener("click", closeUpload);
-  // Edit panel buttons
   document.getElementById("closeEditPanelBtn").addEventListener("click", closeEditPanel);
   document.getElementById("closeEditFormBtn").addEventListener("click", closeEditForm);
   document.getElementById("closeEditFormBottomBtn").addEventListener("click", closeEditForm);
   document.getElementById("updateModBtn").addEventListener("click", updateMod);
-  // Detail panel back button
-  document.getElementById("detailBackBtn").addEventListener("click", () => detailPanel.style.display = "none");
+  document.getElementById("detailBackBtn").addEventListener("click", () => {
+    detailPanel.classList.remove("active");
+    unlockScroll();
+  });
   document.getElementById("prevImgBtn").addEventListener("click", prevImg);
   document.getElementById("nextImgBtn").addEventListener("click", nextImg);
-  // Category filters
   document.querySelectorAll(".cat").forEach(el => {
     el.addEventListener("click", () => {
       currentCategory = el.dataset.cat;
@@ -350,12 +429,10 @@ document.addEventListener("DOMContentLoaded", () => {
       applyFilter();
     });
   });
-  // Search input
   search.addEventListener("input", () => {
     clearTimeout(searchTimeout);
     searchTimeout = setTimeout(applyFilter, 150);
   });
-  // File uploads for upload panel
   document.getElementById("image1").addEventListener("change", (e) => {
     previewImage(e.target, 0, "upload");
     uploadQueue.push({ file: e.target.files[0], index: 0, mode: "upload" });
@@ -376,7 +453,6 @@ document.addEventListener("DOMContentLoaded", () => {
     uploadQueue.push({ file: e.target.files[0], index: 3, mode: "upload" });
     processQueue();
   });
-  // File uploads for edit panel
   document.getElementById("editImage1").addEventListener("change", (e) => {
     previewImage(e.target, 0, "edit");
     uploadQueue.push({ file: e.target.files[0], index: 0, mode: "edit" });
@@ -397,25 +473,75 @@ document.addEventListener("DOMContentLoaded", () => {
     uploadQueue.push({ file: e.target.files[0], index: 3, mode: "edit" });
     processQueue();
   });
-  // Event delegation for View buttons in modsList
   modsList.addEventListener("click", (e) => {
     if (e.target.classList.contains("download-btn")) {
       const idx = parseInt(e.target.dataset.index);
       openDetail(idx);
     }
   });
-  // Close detail panel when clicking outside content (optional)
   detailPanel.addEventListener("click", (e) => {
     if (!document.getElementById("detailContent").contains(e.target)) {
       e.stopPropagation();
     }
   });
-  // Initial load and intro
   window.addEventListener("load", () => {
+    lockScroll();
+    detailPanel.classList.remove("active");
+    editPanel.classList.remove("active");
+    editFormPanel.classList.remove("active");
+    uploadPanel.classList.remove("active");
+    menuPanel.classList.remove("active");
     setTimeout(() => {
       document.querySelector(".main").style.display = "none";
       document.getElementById("app").classList.add("show");
       loadModsRealtime();
+      appReady = true;
+      unlockScroll();
     }, 5500);
   });
+});
+
+function lockScroll() {
+  document.body.classList.add("no-scroll");
+}
+
+function unlockScroll() {
+  document.body.classList.remove("no-scroll");
+}
+
+function loginAdmin() {
+  const email = prompt("Masukkan email admin:");
+  const password = prompt("Masukkan password:");
+  auth.signInWithEmailAndPassword(email, password)
+    .then(() => {
+      alert("Login berhasil, silakan masukkan PIN lagi");
+      closeMenu();
+    })
+    .catch(() => {
+      alert("Login gagal");
+    });
+}
+
+function showDeveloperMenu() {
+  menuTitle.innerText = "Menu Developer";
+  menuButtons.innerHTML = `
+    <button id="uploadModBtn">Upload Mod</button>
+    <button id="editModBtn">Edit Mod</button>
+    <button id="logoutBtn">Logout</button>
+    <button id="closeMenuBtn" style="background:#ccc;color:#333;">Tutup</button>
+  `;
+  document.getElementById("uploadModBtn").addEventListener("click", openUpload);
+  document.getElementById("editModBtn").addEventListener("click", openEdit);
+  document.getElementById("logoutBtn").addEventListener("click", () => auth.signOut());
+  document.getElementById("closeMenuBtn").addEventListener("click", closeMenu);
+}
+
+auth.onAuthStateChanged(user => {
+  if (user && user.email === "stokjbfz01@gmail.com") {
+    isAdminLoggedIn = true;
+    console.log("Admin login tersimpan");
+  } else {
+    isAdminLoggedIn = false;
+  }
+  menuPanel.classList.remove("active");
 });
