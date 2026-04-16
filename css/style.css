@@ -1,3 +1,4 @@
+/* ========== BASE & GLOBAL ========== */
 body {
   margin: 0;
   font-family: Poppins, "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif;
@@ -7,6 +8,65 @@ body {
   animation: gradientMove 4s ease infinite;
 }
 
+body.no-scroll {
+  overflow: hidden;
+}
+
+/* ========== BACKGROUND LAYER (TIDAK MENUTUPI PANEL) ========== */
+body::before {
+  content: "";
+  position: fixed;
+  width: 200%;
+  height: 200%;
+  top: -50%;
+  left: -50%;
+  background: radial-gradient(circle, rgba(66, 165, 245, 0.2), transparent 70%);
+  animation: floatBg 15s linear infinite;
+  z-index: 0;
+  pointer-events: none;
+}
+
+@keyframes floatBg {
+  0% { transform: translate(0, 0); }
+  50% { transform: translate(50px, 50px); }
+  100% { transform: translate(0, 0); }
+}
+
+@keyframes gradientMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ========== APP CONTAINER (FULL HEIGHT + FLEX) ========== */
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  transform: scale(1.05);
+  transition: all 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+  z-index: 1;
+}
+
+.app.show {
+  opacity: 1;
+  filter: blur(0);
+  transform: scale(1);
+}
+
+/* ========== MODS GRID (FLEXIBLE CONTENT) ========== */
+.mods {
+  flex: 1;
+  padding: 15px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  contain: content; 
+}
+
+/* ========== HEADER & CATEGORIES (TIDAK BERUBAH) ========== */
 .header {
   background: linear-gradient(135deg, #1e88e5, #42a5f5);
   color: white;
@@ -71,14 +131,7 @@ body {
   box-shadow: 0 2px 8px rgba(30, 136, 229, 0.4);
 }
 
-.mods {
-  padding: 15px;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 15px;
-  contain: layout style paint;
-}
-
+/* ========== CARD STYLES ========== */
 .card-content h4 {
   display: -webkit-box;
   -webkit-line-clamp: 1;
@@ -95,13 +148,15 @@ body {
   text-overflow: ellipsis;
 }
 
+.card, .thumb img {
+transition: transform 0.1s linear, opacity 0.1s linear !important;
+}
+
 .thumb {
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  overflow: hidden;
-  background: linear-gradient(90deg, #eee, #ddd, #eee);
-  background-size: 200% 100%;
-  animation: loading 1.2s infinite;
+background: #e0e0e0; /* Warna placeholder saat loading */
+position: relative;
+aspect-ratio: 16 / 9;
+overflow: hidden;
 }
 
 @keyframes loading {
@@ -109,16 +164,21 @@ body {
   100% { background-position: -200% 0; }
 }
 
+/* ========== CARD (tanpa aspect-ratio paksa) ========== */
 .card {
   background: white;
-  border-radius: 15px;
+  border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
   transition: transform 0.25s ease, box-shadow 0.25s ease;
-  will-change: transform;
+  will-change: transform, opacity;
   transform: translateZ(0);
   backface-visibility: hidden;
   perspective: 1000px;
+  display: flex;
+  flex-direction: column;
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 300px;
 }
 
 .card:hover {
@@ -130,17 +190,12 @@ body {
   transform: scale(0.97);
 }
 
-.thumb {
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  overflow: hidden;
-  background: #eee;
-}
-
 .thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+width: 100%;
+height: 100%;
+object-fit: cover;
+display: block;
+transition: opacity 0.3s ease-in;
 }
 
 .card img {
@@ -161,16 +216,38 @@ body {
 
 .card-content {
   padding: 10px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
+  position: relative;
+}
+
+.card-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 5px 0;
+  line-height: 1.2;
 }
 
 .badge {
-  font-size: 10px;
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
   background: linear-gradient(135deg, #ff5252, #ff1744);
   color: white;
-  padding: 4px 6px;
-  border-radius: 5px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  backdrop-filter: blur(3px);
+  margin-bottom: 8px;
+  align-self: flex-start;
 }
 
+/* ========== BUTTONS ========== */
 button {
   padding: 10px;
   border: none;
@@ -193,22 +270,97 @@ button:hover {
 
 .download-btn {
   width: 100%;
-  margin-top: 5px;
+  padding: 16px;
+  font-size: 10px;
+  border-radius: 15px;
+  margin-top: auto;
 }
 
+.btn-text {
+  font-size: 20px;
+  font-weight: 1000;
+}
+
+.upload-btn {
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 1000;
+  background: white;
+  color: #1e88e5;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.upload-btn:hover {
+  background: #f5f5f5;
+}
+
+.upload-btn:active {
+  transform: scale(0.95);
+}
+
+/* ========== PANEL OVERLAY (STAY ON TOP) ========== */
 .panel {
-  display: none;
-  overflow-y: auto;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(5px);
-  animation: fadeIn 0.3s;
+display: none;
+position: fixed; /* WAJIB: Mengunci posisi di layar, bukan di konten */
+top: 0;
+left: 0;
+width: 100vw;
+height: 100vh;
+background: rgba(0, 0, 0, 0.7);
+backdrop-filter: blur(8px);
+z-index: 100000; /* Angka besar agar selalu di depan mod card */
+justify-content: center;
+align-items: center;
+padding: 15px;
+box-sizing: border-box;
 }
 
+.panel.active {
+display: flex;
+}
+
+.box {
+background: white;
+padding: 20px;
+width: 100%;
+max-width: 400px;
+max-height: 85vh; /* Batasi tinggi box agar tidak off-screen di HP */
+border-radius: 20px;
+overflow-y: auto; /* Jika input banyak, box bisa di-scroll internal */
+position: relative;
+box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+}
+
+
+/* Sembunyikan scrollbar agar lebih rapi (Opsional) */
+.box::-webkit-scrollbar {
+width: 5px;
+}
+.box::-webkit-scrollbar-thumb {
+background: #1e88e5;
+border-radius: 10px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ========== DETAIL PANEL (FULL SCREEN + SCROLL) ========== */
 #detailPanel {
   display: none;
   position: fixed;
@@ -217,7 +369,16 @@ button:hover {
   width: 100%;
   height: 100%;
   background: white;
-  z-index: 9999;
+  z-index: 999999;
+  flex-direction: column;
+}
+
+#detailPanel.active {
+  display: flex;
+}
+
+#detailContent {
+  flex: 1;
   overflow-y: auto;
 }
 
@@ -253,31 +414,7 @@ button:hover {
   font-size: 18px;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.box {
-  background: white;
-  padding: 20px;
-  max-width: 400px;
-  margin: 80px auto;
-  border-radius: 15px;
-  animation: slideUp 0.3s;
-}
-
-@keyframes slideUp {
-  from {
-    transform: translateY(30px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
+/* ========== FORM ELEMENTS ========== */
 input, textarea, select {
   width: 100%;
   margin-bottom: 10px;
@@ -293,30 +430,7 @@ input:focus, textarea:focus, select:focus {
   box-shadow: 0 0 5px rgba(30, 136, 229, 0.3);
 }
 
-body::before {
-  content: "";
-  position: fixed;
-  width: 200%;
-  height: 200%;
-  top: -50%;
-  left: -50%;
-  background: radial-gradient(circle, rgba(66, 165, 245, 0.2), transparent 70%);
-  animation: floatBg 15s linear infinite;
-  z-index: -1;
-}
-
-@keyframes floatBg {
-  0% { transform: translate(0, 0); }
-  50% { transform: translate(50px, 50px); }
-  100% { transform: translate(0, 0); }
-}
-
-@keyframes gradientMove {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
+/* ========== PROGRESS BAR ========== */
 .progress-box {
   position: relative;
   height: 8px;
@@ -340,19 +454,7 @@ body::before {
   font-size: 11px;
 }
 
-.app {
-  opacity: 0;
-  filter: blur(15px);
-  transform: scale(1.05);
-  transition: all 1.2s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.app.show {
-  opacity: 1;
-  filter: blur(0);
-  transform: scale(1);
-}
-
+/* ========== INTRO & MAIN ANIMATION ========== */
 .intro {
   position: fixed;
   inset: 0;
@@ -442,22 +544,23 @@ body::before {
   }
 }
 
-.upload-btn {
-  padding: 6px 10px;
-  font-size: 12px;
-  font-weight: 1000;
-  background: white;
-  color: #1e88e5;
+/* ========== OVERLAY LAINNYA ========== */
+#detailDownload {
+  position: fixed;
+  bottom: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 30px);
+  max-width: 700px;
+  padding: 14px;
+  font-size: 18px;
+  font-weight: bold;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #66bb6a, #a5d6a7);
+  color: white;
   border: none;
-  border-radius: 5px;
   cursor: pointer;
-  transition: 0.2s;
-}
-
-.upload-btn:hover {
-  background: #f5f5f5;
-}
-
-.upload-btn:active {
-  transform: scale(0.95);
+  z-index: 999999;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
