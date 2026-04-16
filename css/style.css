@@ -58,13 +58,14 @@ body::before {
 
 /* ========== MODS GRID (FLEXIBLE CONTENT) ========== */
 .mods {
-  flex: 1;
-  padding: 15px;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 15px;
-  contain: content; 
+    padding: 15px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    /* Nilai pertama: vertical (8px), Nilai kedua: horizontal (15px) */
+    gap: 8px 15px; 
+    contain: layout style paint;
 }
+
 
 /* ========== HEADER & CATEGORIES (TIDAK BERUBAH) ========== */
 .header {
