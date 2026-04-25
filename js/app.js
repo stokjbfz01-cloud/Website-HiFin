@@ -368,30 +368,6 @@ if (editImageInput) {
   });
 }
 
-document.getElementById("saveModBtn").addEventListener("click", async () => {
-  const overlay = document.getElementById("loadingOverlay");
-  const success = document.getElementById("successPopup");
-  overlay.style.display = "flex";
-  await db.collection("mods").add({
-    title: document.getElementById("title").value,
-    desc: document.getElementById("desc").value,
-    category: document.getElementById("category").value,
-    link: document.getElementById("link").value,
-    images: uploadedImages.filter(x => x),
-    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-  });
-  overlay.style.display = "none";
-  success.classList.add("show");
-  success.style.display = "block";
-  setTimeout(() => {
-    success.classList.remove("show");
-    success.style.display = "none";
-  }, 2500);
-  uploadedImages = [null, null, null, null];
-  closeUpload();
-});
-
 // Edit List dengan stagger
 function loadEditList() {
   const list = document.getElementById("editList");
