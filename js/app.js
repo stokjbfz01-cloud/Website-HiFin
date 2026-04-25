@@ -69,7 +69,10 @@ function closePin() { closePanel(pinPanel); }
 function closeMenu() { closePanel(menuPanel); }
 function openUploadDirect() { openPanel(uploadPanel); }
 function openUpload() { closePanel(menuPanel); openPanel(uploadPanel); }
-function closeUpload() { closePanel(uploadPanel); }
+function closeUpload() { 
+  closePanel(uploadPanel); 
+  resetUploadForm();
+}
 function openEdit() { closePanel(menuPanel); openPanel(editPanel); loadEditList(); }
 function closeEditPanel() { closePanel(editPanel); }
 function closeEditForm() { editFormPanel.classList.remove("active"); editPanel.classList.add("active"); }
@@ -274,22 +277,31 @@ async function uploadImage(file) {
   if (!res.ok) throw new Error("Upload gagal");
   return data.secure_url;
 }
-async function processQueue(type = "upload") {
+async function processQueue() {
   if (isUploading) return;
   isUploading = true;
+  
   while (uploadQueue.length > 0) {
     const { file, index, mode } = uploadQueue.shift();
     const barId = (mode === "edit" ? "editProgress" : "progress") + (index + 1);
+    const progressBar = document.getElementById(barId);
+
     try {
       const url = await uploadImage(file);
       if (mode === "edit") editUploadedImages[index] = url;
       else uploadedImages[index] = url;
-      document.getElementById(barId).style.width = "100%";
-      document.getElementById(barId).style.background = "#22c55e";
+
+      if (progressBar) {
+        progressBar.style.width = "100%";
+        progressBar.style.background = "#22c55e"; // Hijau jika sukses
+      }
     } catch (err) {
-      document.getElementById(barId).style.background = "#ef4444";
+      if (progressBar) {
+        progressBar.style.background = "#ef4444"; // Merah jika gagal
+      }
+      console.error("Upload Error:", err);
     }
-    await delay(1000);
+    await delay(500); // Beri jeda singkat antar upload
   }
   isUploading = false;
 }
@@ -315,13 +327,46 @@ document.querySelectorAll(".cat-item").forEach(el => {
   });
 });
 
-[1,2].forEach(i => {
+[1, 2].forEach(i => {
   const input = document.getElementById(`image${i}`);
-  if(input) input.addEventListener("change", (e) => {
-    uploadQueue.push({ file: e.target.files[0], index: i-1, mode: "upload" });
-    processQueue();
-  });
+  if (input) {
+    input.addEventListener("change", (e) => {
+      if (e.target.files.length > 0) {
+        // Beri warna kuning tanda sedang mengantri/proses
+        document.getElementById(`progress${i}`).style.width = "10%"; 
+        document.getElementById(`progress${i}`).style.background = "#f59e0b"; 
+        
+        uploadQueue.push({ file: e.target.files[0], index: i - 1, mode: "upload" });
+        processQueue();
+      }
+    });
+  }
 });
+
+// --- Listener untuk Input Gambar di Menu Edit ---
+const editImageInput = document.getElementById("editImage1");
+if (editImageInput) {
+  editImageInput.addEventListener("change", (e) => {
+    if (e.target.files.length > 0) {
+      // 1. Beri warna kuning pada progress bar edit
+      const progressBar = document.getElementById("editProgress1");
+      if (progressBar) {
+        progressBar.style.width = "10%"; 
+        progressBar.style.background = "#f59e0b"; 
+      }
+      
+      // 2. Masukkan ke antrean dengan mode "edit"
+      uploadQueue.push({ 
+        file: e.target.files[0], 
+        index: 0, 
+        mode: "edit" 
+      });
+      
+      // 3. Jalankan mesin upload
+      processQueue();
+    }
+  });
+}
 
 document.getElementById("saveModBtn").addEventListener("click", async () => {
   const overlay = document.getElementById("loadingOverlay");
@@ -370,9 +415,96 @@ function loadEditList() {
   });
 }
 
+// --- Fungsi untuk Reset Form & Progress Bar ---
+function resetUploadForm() {
+  // Reset Array Data
+  uploadedImages = [null, null, null, null];
+  uploadQueue = [];
+  isUploading = false;
+
+  // Reset Input File
+  document.getElementById("image1").value = "";
+  document.getElementById("image2").value = "";
+  
+  // Reset Text Input & Textarea
+  document.getElementById("title").value = "";
+  document.getElementById("desc").value = "";
+  document.getElementById("link").value = "";
+
+  // Reset Visual Progress Bar
+  [1, 2].forEach(i => {
+    const bar = document.getElementById(`progress${i}`);
+    if (bar) {
+      bar.style.width = "0%";
+      bar.style.background = "var(--primary)"; // Kembalikan ke warna biru
+    }
+  });
+}
+
+// --- Perbaikan Save Mod (Versi Final & Bersih) ---
+document.getElementById("saveModBtn").addEventListener("click", async () => {
+  const title = document.getElementById("title").value.trim();
+  const link = document.getElementById("link").value.trim();
+  const desc = document.getElementById("desc").value.trim();
+  const category = document.getElementById("category").value;
+  
+  // 1. Validasi Minimal 1 Gambar (Pesan Pemberitahuan)
+  const hasImage = uploadedImages.some(img => img !== null);
+  if (!hasImage) {
+    alert("⚠️ Notifikasi: Kamu wajib mengupload minimal 1 gambar sebagai thumbnail!");
+    return;
+  }
+
+  // 2. Validasi Input Form
+  if (!title || !link || !desc) {
+    alert("⚠️ Lengkapi semua data (Judul, Deskripsi, dan Link) sebelum publikasi!");
+    return;
+  }
+
+  // 3. Proteksi Proses Upload yang Masih Berjalan
+  if (isUploading || uploadQueue.length > 0) {
+    alert("⏳ Tunggu sebentar, gambar masih dalam proses upload ke server...");
+    return;
+  }
+
+  const overlay = document.getElementById("loadingOverlay");
+  const success = document.getElementById("successPopup");
+  
+  overlay.style.display = "flex";
+
+  try {
+    await db.collection("mods").add({
+      title: title,
+      desc: desc,
+      category: category,
+      link: link,
+      images: uploadedImages.filter(x => x !== null),
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    overlay.style.display = "none";
+    success.classList.add("show");
+    success.style.display = "block";
+
+    setTimeout(() => {
+      success.classList.remove("show");
+      success.style.display = "none";
+      resetUploadForm(); // Reset semua state agar upload berikutnya lancar
+      closeUpload();
+    }, 2000);
+
+  } catch (error) {
+    overlay.style.display = "none";
+    alert("Gagal mempublikasikan mod: " + error.message);
+  }
+});
+
 window.selectEdit = function(index) {
   editIndex = index;
   const mod = mods[index];
+  editUploadedImages = [null, null, null, null]; 
+  document.getElementById("editProgress1").style.width = "0%";
   document.getElementById("editTitle").value = mod.title;
   document.getElementById("editDesc").value = mod.desc;
   document.getElementById("editCategory").value = mod.category;
