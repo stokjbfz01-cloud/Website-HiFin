@@ -48,16 +48,20 @@
   <section class="hero">
     <div class="hero-content">
       <h1>Akses Mod <br><span>Premium Gratis</span></h1>
-      <p>Berbagai APK, Game, dan Script yang bisa kalian<br>dapatkan secara instan, yang tentunya gratis.</p>
-      <button class="hero-btn" style="background:#22c55e;"
-        onclick="window.open('https://whatsapp.com/channel/0029VbCCbN9AojYwc7gebK3D')">
-        <i class="fa-brands fa-whatsapp"></i> WhatsApp
-      </button>
-      <button class="hero-btn" style="background:#ef4444;"
-        onclick="window.open('https://youtube.com/@sedangberproses-yah?si=7J7yVblAVGktx1Cz')">
-        <i class="fa-brands fa-youtube"></i> YouTube
-      </button>
-    </div>
+      <p>Berbagai APK, Game, dan Script yang bisa kalian</p>
+      <div class="hero-buttons">
+
+  <button class="hero-btn" style="background:#22c55e;"
+  onclick="window.open('https://whatsapp.com/channel/0029VbCCbN9AojYwc7gebK3D')">
+  <i class="fa-brands fa-whatsapp"></i> WhatsApp
+</button>
+
+<button class="hero-btn" style="background:#ef4444;"
+  onclick="window.open('https://youtube.com/@sedangberproses-yah?si=7J7yVblAVGktx1Cz')">
+  <i class="fa-brands fa-youtube"></i> YouTube
+</button>
+
+</div>
   </section>
 
   <!-- Categories -->
@@ -83,10 +87,10 @@
       <i class="fa-solid fa-house"></i>
       <span>Beranda</span>
     </button>
-    <button class="nav-item" onclick="document.querySelector('.category-scroll').scrollIntoView({behavior:'smooth'})">
-      <i class="fa-solid fa-compass"></i>
-      <span>Eksplor</span>
-    </button>
+    <button class="nav-item" id="openUpload">
+  <i class="fa-solid fa-plus"></i>
+  <span>Upload</span>
+</button>
     <button class="nav-item" onclick="window.open('admin.html', '_blank')">
       <i class="fa-solid fa-user-shield"></i>
       <span>Admin</span>
@@ -125,6 +129,51 @@
   <button class="floating-download" id="detailDownloadSmall">
     <i class="fa-solid fa-download"></i> Unduh File Sekarang
   </button>
+</div>
+
+<div id="uploadModal" class="upload-modal">
+  <div class="upload-card">
+    <h2><i class="fa-solid fa-cloud-arrow-up"></i> Upload Mod Baru</h2>
+
+    <!-- INPUT -->
+    <input type="text" id="uTitle" placeholder="Judul Mod">
+    <textarea id="uDesc" placeholder="Deskripsi lengkap fitur mod..."></textarea>
+
+    <select id="uCategory">
+      <option value="APK">APK Mods</option>
+      <option value="GAME">Game Mods</option>
+      <option value="SCRIPT">Script</option>
+      <option value="DLL">DLL</option>
+    </select>
+
+    <input type="text" id="uLink" placeholder="URL Download (Mediafire/Drive)">
+
+    <div class="upload-box">
+
+  <!-- GAMBAR 1 -->
+  <div class="upload-group">
+    <label>📷 Gambar 1 (Cover)</label>
+    <input type="file" id="uImg1">
+    <div class="progress">
+      <div class="progress-bar" id="pubProg1"></div>
+    </div>
+  </div>
+
+  <!-- GAMBAR 2 -->
+  <div class="upload-group">
+    <label>📷 Gambar Tambahan</label>
+    <input type="file" id="uImg2">
+    <div class="progress">
+      <div class="progress-bar" id="pubProg2"></div>
+    </div>
+  </div>
+
+</div>
+
+    <!-- BUTTON -->
+    <button id="submitUpload" class="btn-primary">Publikasikan Mod</button>
+    <button onclick="closeUpload()" class="btn-close">Tutup</button>
+  </div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
