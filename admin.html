@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HiFin Admin Panel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+<div class="container" id="app">
+  <!-- Login Section -->
+  <div id="loginSection" class="card">
+    <div style="font-size: 40px; margin-bottom: 10px;"></div>
+    <h2>Admin Access</h2>
+    <input type="email" id="adminEmail" placeholder="Email Admin">
+    <input type="password" id="adminPassword" placeholder="Password">
+    <button id="loginBtn" style="width:100%">Masuk</button>
+  </div>
+
+  <!-- Dashboard -->
+  <div id="dashboard" style="display:none;">
+    <div class="flex-between">
+      <h2><span class="brand-text">HiFin</span> Admin Panel</h2>
+      <button id="logoutBtn" style="background:rgba(255,255,255,0.1)"><i class="fa-solid fa-sign-out-alt"></i> Logout</button>
+    </div>
+
+    <!-- Upload Card -->
+    <div class="card">
+      <h3><i class="fa-solid fa-plus-circle"></i> Tambah Mod Baru</h3>
+      <input type="text" id="title" placeholder="Judul Mod">
+      <textarea id="desc" rows="3" placeholder="Deskripsi..."></textarea>
+      <select id="category">
+        <option value="APK">APK</option>
+        <option value="GAME">GAME</option>
+        <option value="SCRIPT">SCRIPT</option>
+        <option value="DLL">DLL</option>
+      </select>
+      <input type="text" id="link" placeholder="URL Download">
+      
+      <label>Gambar 1 (Cover)</label>
+      <input type="file" id="image1" accept="image/*">
+      <div class="progress-box"><div class="progress-bar" id="progress1"></div></div>
+      
+      <label>Gambar 2 (Opsional)</label>
+      <input type="file" id="image2" accept="image/*">
+      <div class="progress-box"><div class="progress-bar" id="progress2"></div></div>
+      
+      <button id="saveModBtn" style="width:100%"><i class="fa-solid fa-paper-plane"></i> Publikasikan</button>
+    </div>
+
+    <!-- Mod List -->
+    <div class="card">
+      <h3><i class="fa-solid fa-list"></i> Kelola Konten</h3>
+      <div id="modsListAdmin"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Edit Mod (Sesuai Gambar User) -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal-card">
+    <h2><i class="fa-solid fa-pen-to-square"></i> Update Mod</h2>
+    
+    <select id="editCategory">
+      <option value="APK">APK</option>
+      <option value="GAME">GAME</option>
+      <option value="SCRIPT">SCRIPT</option>
+      <option value="DLL">DLL</option>
+    </select>
+    
+    <input type="text" id="editTitle" placeholder="Judul Mod">
+    
+    <textarea id="editDesc" rows="4" placeholder="Deskripsi lengkap..."></textarea>
+    
+    <input type="text" id="editLink" placeholder="URL Download">
+    
+    <label style="color: #64748b; margin-top: 0;">Ganti Gambar 1 (Cover)</label>
+    <input type="file" id="editImgInput1" accept="image/*">
+    <div class="progress-box"><div class="progress-bar" id="editProgress1"></div></div>
+
+    <label style="color: #64748b; margin-top: 0;">Ganti Gambar 2</label>
+    <input type="file" id="editImgInput2" accept="image/*">
+    <div class="progress-box"><div class="progress-bar" id="editProgress2"></div></div>
+    
+    <button class="btn-save" id="updateModBtn">Simpan Perubahan</button>
+    <button class="btn-cancel" onclick="closeEditModal()">Batal</button>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>
