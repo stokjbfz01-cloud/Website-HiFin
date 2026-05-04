@@ -1,3 +1,4 @@
+/* ========== VARIABEL & GLOBAL EASING iOS ========== */
 :root {
   --primary: #3b82f6;
   --primary-glow: rgba(59, 130, 246, 0.5);
@@ -15,22 +16,9 @@
   --bounce-easing: cubic-bezier(0.34, 1.2, 0.64, 1);
   --fluid-easing: var(--spring-easing);
   --close-easing: cubic-bezier(0.7, 0, 0.3, 1);
-  
-    --primary: #6366f1;
-  --primary-hover: #4f46e5;
-  --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
-  --glass-bg: rgba(255, 255, 255, 0.03);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --card-bg: #1e293b;
-  --danger: #ef4444;
-  --warning: #f59e0b;
-  --success: #10b981;
-  --btn-gradient: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
 }
 
-/* ========== RESET / GLOBAL ========== */
+/* ========== BASE & GLOBAL ========== */
 * {
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
@@ -51,62 +39,15 @@ body {
   overflow-x: hidden;
 }
 
-body.no-scroll { overflow: hidden; }
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-}
-
-body {
-  background: var(--bg-gradient);
-  background-attachment: fixed;
-  color: var(--text-main);
-  min-height: 100vh;
-  padding: 20px;
-  line-height: 1.6;
-}
-
-/* ========== ANIMATION / KEYFRAMES ========== */
 @keyframes gradientBG {
   0% { background-position: 0% 50%, 0 0; }
   50% { background-position: 100% 50%, 0 0; }
   100% { background-position: 0% 50%, 0 0; }
 }
 
-@keyframes welcomeFade {
-  0% { opacity: 0; transform: translateY(20px); }
-  30% { opacity: 1; transform: translateY(0); }
-  70% { opacity: 1; transform: translateY(0); }
-  100% { opacity: 0; transform: translateY(-20px); }
-}
+body.no-scroll { overflow: hidden; }
 
-@keyframes brandReveal {
-  0% { opacity: 0; transform: scale(0.9) translateY(20px); filter: blur(5px); }
-  100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
-}
-
-@keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-@keyframes pulseSpin {
-  0% { transform: rotate(0deg) scale(1); }
-  50% { transform: rotate(180deg) scale(1.1); filter: drop-shadow(0 0 10px var(--primary-glow)); }
-  100% { transform: rotate(360deg) scale(1); }
-}
-
-@keyframes editItemFade {
-  to { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes modalFade { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
-
-/* ========== LAYOUT / CONTAINER ========== */
+/* ========== INTRO ANIMATION (sinkron global) ========== */
 .intro-wrapper {
   position: fixed;
   inset: 0;
@@ -173,6 +114,31 @@ body {
   border: 1px solid #e2e8f0;
 }
 
+@keyframes welcomeFade {
+  0% { opacity: 0; transform: translateY(20px); }
+  30% { opacity: 1; transform: translateY(0); }
+  70% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-20px); }
+}
+
+@keyframes brandReveal {
+  0% { opacity: 0; transform: scale(0.9) translateY(20px); filter: blur(5px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes pulseSpin {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.1); filter: drop-shadow(0 0 10px var(--primary-glow)); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+/* ========== APP CONTAINER with depth transition ========== */
 .app {
   min-height: 100vh;
   display: flex;
@@ -191,15 +157,14 @@ body {
   transform: translateY(0) scale(1);
 }
 
+/* Depth saat modal/detail terbuka */
 .app.depth {
   transform: scale(0.96);
   filter: blur(4px) brightness(0.7);
   transition: transform 0.5s var(--spring-easing), filter 0.5s var(--smooth-easing);
 }
 
-.container { max-width: 1000px; margin: 0 auto; }
-
-/* ========== COMPONENT GLOBAL ========== */
+/* ========== MICRO INTERACTIONS (Tap Feedback) ========== */
 button, .btn-submit, .hero-btn, .nav-item, .cat-item, .card, .btn-detail, .back-btn, .img-nav-btn, .floating-download {
   transition: transform 0.1s var(--bounce-easing), background 0.2s, opacity 0.2s;
   cursor: pointer;
@@ -215,54 +180,12 @@ button:active, .btn-submit:active, .hero-btn:active, .nav-item:active, .cat-item
   transition: transform 0.08s;
 }
 
+/* Khusus untuk tombol yang butuh bounce back */
 .btn-submit, .hero-btn {
   transition: transform 0.12s var(--bounce-easing), box-shadow 0.2s;
 }
 
-label { display: block; font-size: 13px; font-weight: 500; color: var(--text-muted); margin-bottom: 8px; margin-top: 10px; }
-
-input, textarea, select {
-  width: 100%; padding: 14px 18px; margin-bottom: 18px;
-  background: rgba(15, 23, 42, 0.6); border: 1px solid var(--glass-border);
-  border-radius: 14px; font-size: 14px; color: #fff; transition: all 0.3s;
-}
-
-input:focus, textarea:focus, select:focus {
-  outline: none; border-color: var(--primary); background: rgba(15, 23, 42, 0.8);
-  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
-}
-
-button {
-  background: var(--primary); color: white; border: none; padding: 14px 28px;
-  border-radius: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s;
-  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-}
-
-button:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3); }
-
-.btn-save { background: var(--btn-gradient); width: 100%; margin-top: 10px; }
-.btn-cancel { background: #e2e8f0; color: #1e293b; width: 100%; margin-top: 10px; }
-.btn-danger { background: var(--danger); }
-.btn-warning { background: var(--warning); }
-
-.progress-box { height: 8px; background: #e2e8f0; border-radius: 10px; margin-bottom: 15px; position: relative; }
-.progress-bar { height: 100%; width: 0%; background: var(--primary); border-radius: 10px; transition: width 0.2s; }
-
-.progress-box { height: 6px; background: rgba(0,0,0,0.05); border-radius: 10px; margin: 5px 0 15px 0; overflow: hidden; }
-.progress-bar { height: 100%; width: 0%; background: var(--primary); transition: width 0.4s; }
-
-.lazy-img {
-  opacity: 0;
-  filter: blur(10px);
-  transition: opacity 0.6s var(--smooth-easing), filter 0.6s var(--smooth-easing);
-}
-
-.lazy-img.loaded {
-  opacity: 1;
-  filter: blur(0);
-}
-
-/* ========== NAVIGATION ========== */
+/* ========== NAVBAR ========== */
 .navbar {
   display: flex;
   align-items: center;
@@ -320,40 +243,8 @@ button:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(99, 102
   color: #94a3b8;
 }
 
-.bottom-nav {
-  position: sticky;  
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  background: var(--glass-bg);
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  border-top: 1px solid var(--glass-border);
-  display: flex;
-  justify-content: space-around;
-  padding: 12px 0 calc(12px + env(safe-area-inset-bottom));
-  box-shadow: 0 -5px 25px rgba(0,0,0,0.05);
-  z-index: 999;
-  border-radius: 25px 25px 0 0;
-}
-.nav-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  color: #94a3b8;
-  font-size: 10px;
-  font-weight: 600;
-  cursor: pointer;
-  background: none;
-  border: none;
-  transition: color 0.2s, transform 0.1s;
-}
-.nav-item i { font-size: 20px; transition: transform 0.2s var(--bounce-easing); }
-.nav-item.active { color: var(--primary); }
-.nav-item.active i { transform: translateY(-3px); }
-
-/* ========== SECTION UI ========== */
+/* ========== HERO ========== */
+/* ========== HERO UPDATED ========== */
 .hero {
   margin: 15px 20px;
   padding: 40px 20px; /* Sesuaikan padding agar konten di dalam tidak terlalu sesak */
@@ -405,6 +296,7 @@ button:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(99, 102
   box-shadow: 0 12px 25px rgba(34, 197, 94, 0.4);
 }
 
+/* ========== KATEGORI ========== */
 .section-header {
   display: flex;
   justify-content: space-between;
@@ -453,7 +345,7 @@ button:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(99, 102
 }
 .cat-item.active i { color: white; }
 
-/* ========== CARD / LIST / GRID ========== */
+/* ========== MODS GRID & CARD ========== */
 .mods {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -553,31 +445,41 @@ button:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(99, 102
 }
 .card:hover .btn-detail { background: var(--primary); color: white; }
 
-.card {
+/* ========== BOTTOM NAV ========== */
+.bottom-nav {
+  position: sticky;  
+  bottom: 0;
+  left: 0;
+  width: 100%;
   background: var(--glass-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--glass-border);
-  border-radius: 24px;
-  padding: 32px;
-  margin-bottom: 30px;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border-top: 1px solid var(--glass-border);
+  display: flex;
+  justify-content: space-around;
+  padding: 12px 0 calc(12px + env(safe-area-inset-bottom));
+  box-shadow: 0 -5px 25px rgba(0,0,0,0.05);
+  z-index: 999;
+  border-radius: 25px 25px 0 0;
 }
-
-h2, h3 { color: #fff; display: flex; align-items: center; gap: 12px; margin-bottom: 24px; font-weight: 700; }
-
-.mod-item {
-  background: rgba(255, 255, 255, 0.02); border: 1px solid var(--glass-border);
-  border-radius: 20px; padding: 20px; margin-bottom: 16px;
-  display: flex; justify-content: space-between; align-items: center;
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: #94a3b8;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  background: none;
+  border: none;
+  transition: color 0.2s, transform 0.1s;
 }
+.nav-item i { font-size: 20px; transition: transform 0.2s var(--bounce-easing); }
+.nav-item.active { color: var(--primary); }
+.nav-item.active i { transform: translateY(-3px); }
 
-.category-badge {
-  font-size: 10px; text-transform: uppercase; background: var(--primary);
-  padding: 2px 8px; border-radius: 6px; font-weight: 700; margin-right: 8px;
-}
-
-/* ========== MODAL / PANEL / OVERLAY ========== */
+/* ========== PANELS (OVERLAYS) dengan transisi smooth ========== */
 .panel {
   position: fixed;
   inset: 0;
@@ -626,24 +528,7 @@ h2, h3 { color: #fff; display: flex; align-items: center; gap: 12px; margin-bott
 }
 .btn-submit { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; }
 
-.modal-overlay {
-  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(8px);
-  display: none; justify-content: center; align-items: center; z-index: 1000;
-  padding: 20px;
-}
-
-.modal-card {
-  background: #fff; color: #1e293b; width: 100%; max-width: 450px;
-  border-radius: 28px; padding: 30px; position: relative;
-  animation: modalFade 0.3s ease-out;
-}
-
-.modal-card h2 { color: #1e293b; font-size: 22px; margin-bottom: 20px; border-bottom: none; }
-.modal-card input, .modal-card textarea, .modal-card select {
-  background: #f8fafc; border: 1px solid #e2e8f0; color: #1e293b; margin-bottom: 12px;
-}
-
+/* ========== ELASTIC DETAIL PANEL (spring expansion) ========== */
 #detailPanel {
   position: fixed;
   display: flex;
@@ -691,36 +576,6 @@ h2, h3 { color: #fff; display: flex; align-items: center; gap: 12px; margin-bott
   position: sticky; top: 0; background: var(--glass-bg);
   backdrop-filter: blur(10px); z-index: 10; border-bottom: 1px solid #e2e8f0;
 }
-
-.floating-download {
-  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-  width: calc(100% - 40px); max-width: 400px;
-  background: linear-gradient(135deg, #22c55e, #16a34a);
-  color: white; padding: 15px; border-radius: 20px;
-  font-size: 16px; font-weight: 700; border: none;
-  box-shadow: 0 10px 25px rgba(34, 197, 94, 0.4); cursor: pointer;
-  display: flex; justify-content: center; align-items: center; gap: 10px;
-  z-index: 100001; transition: transform 0.2s var(--bounce-easing);
-}
-.floating-download:active { transform: translateX(-50%) scale(0.96); }
-
-#loadingOverlay {
-  transition: transform 0.2s var(--bounce-easing);
-}
-#successPopup {
-  transition: transform 0.3s var(--bounce-easing), opacity 0.2s;
-}
-#successPopup.show {
-  transform: translate(-50%, -50%) scale(1);
-}
-
-#editList > div {
-  opacity: 0;
-  transform: translateX(-10px);
-  animation: editItemFade 0.3s var(--spring-easing) forwards;
-}
-
-/* ========== DETAIL UI ========== */
 .back-btn {
   width: 36px; height: 36px; border-radius: 50%;
   background: #f1f5f9; display: flex; justify-content: center; align-items: center;
@@ -763,15 +618,39 @@ h2, h3 { color: #fff; display: flex; align-items: center; gap: 12px; margin-bott
   display: flex; justify-content: center; align-items: center; gap: 10px;
   z-index: 100001; transition: transform 0.2s var(--bounce-easing);
 }
+.floating-download:active { transform: translateX(-50%) scale(0.96); }
 
-/* ========== UTILITIES / HELPER CLASS ========== */
-.flex-between { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-.brand-text { background: linear-gradient(to right, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; }
-#loginSection { max-width: 420px; margin: 10vh auto; text-align: center; }
+/* Loading & Success dengan bounce */
+#loadingOverlay {
+  transition: transform 0.2s var(--bounce-easing);
+}
+#successPopup {
+  transition: transform 0.3s var(--bounce-easing), opacity 0.2s;
+}
+#successPopup.show {
+  transform: translate(-50%, -50%) scale(1);
+}
 
-/* ========== RESPONSIVE ========== */
-@media (max-width: 768px) {
-  .mod-item { flex-direction: column; align-items: flex-start; gap: 16px; }
-  .mod-actions { width: 100%; display: flex; gap: 8px; }
-  .mod-actions button { flex: 1; }
+.progress-box { height: 8px; background: #e2e8f0; border-radius: 10px; margin-bottom: 15px; position: relative; }
+.progress-bar { height: 100%; width: 0%; background: var(--primary); border-radius: 10px; transition: width 0.2s; }
+
+/* Admin edit list stagger */
+#editList > div {
+  opacity: 0;
+  transform: translateX(-10px);
+  animation: editItemFade 0.3s var(--spring-easing) forwards;
+}
+@keyframes editItemFade {
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.lazy-img {
+  opacity: 0;
+  filter: blur(10px);
+  transition: opacity 0.6s var(--smooth-easing), filter 0.6s var(--smooth-easing);
+}
+
+.lazy-img.loaded {
+  opacity: 1;
+  filter: blur(0);
 }
