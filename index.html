@@ -35,7 +35,7 @@
   
   <!-- Navbar -->
   <nav class="navbar">
-    <div class="logo" onclick="openPin()">
+    <div class="logo">
       <i class="fa-solid fa-layer-group" style="color: var(--primary);"></i> HiFin<span>Mods</span>
     </div>
     <div class="search-container">
@@ -50,13 +50,13 @@
       <h1>Akses Mod <br><span>Premium Gratis</span></h1>
       <p>Berbagai APK, Game, dan Script yang bisa kalian<br>dapatkan secara instan, yang tentunya gratis.</p>
       <button class="hero-btn" style="background:#22c55e;"
-  onclick="window.open('https://whatsapp.com/channel/0029Vb75VQWA2pL9MTcaeQ31')">
-  <i class="fa-brands fa-whatsapp"></i> WhatsApp
-</button>
-<button class="hero-btn" style="background:#ef4444;"
-  onclick="window.open('https://youtube.com/@sedangberproses-yah?si=7J7yVblAVGktx1Cz')">
-  <i class="fa-brands fa-youtube"></i> YouTube
-</button>
+        onclick="window.open('https://whatsapp.com/channel/0029VbCCbN9AojYwc7gebK3D')">
+        <i class="fa-brands fa-whatsapp"></i> WhatsApp
+      </button>
+      <button class="hero-btn" style="background:#ef4444;"
+        onclick="window.open('https://youtube.com/@sedangberproses-yah?si=7J7yVblAVGktx1Cz')">
+        <i class="fa-brands fa-youtube"></i> YouTube
+      </button>
     </div>
   </section>
 
@@ -87,95 +87,14 @@
       <i class="fa-solid fa-compass"></i>
       <span>Eksplor</span>
     </button>
-    <button class="nav-item" onclick="openUploadDirect()">
-      <i class="fa-solid fa-cloud-arrow-up"></i>
-      <span>Upload</span>
-    </button>
-    <button class="nav-item" onclick="openPin()">
+    <button class="nav-item" onclick="window.open('admin.html', '_blank')">
       <i class="fa-solid fa-user-shield"></i>
       <span>Admin</span>
     </button>
   </nav>
 </div>
 
-<!-- ========== PANELS OVERLAY ========== -->
-
-<!-- PIN Panel -->
-<div class="panel" id="pinPanel">
-  <div class="box">
-    <h3><i class="fa-solid fa-lock"></i> Keamanan Admin</h3>
-    <input type="password" id="pinInput" inputmode="numeric" placeholder="Masukkan PIN Rahasia">
-    <button class="btn-submit" id="pinCheckBtn">Akses Panel</button>
-    <button id="pinCloseBtn" style="background:#e2e8f0; color:#333; margin-top:10px;">Batal</button>
-  </div>
-</div>
-
-<!-- Menu Developer -->
-<div class="panel" id="menuPanel">
-  <div class="box">
-    <h3 id="menuTitle"><i class="fa-solid fa-terminal"></i> Terminal Admin</h3>
-    <div id="menuButtons" style="display:flex; flex-direction:column; gap:10px;"></div>
-  </div>
-</div>
-
-<!-- Upload Panel -->
-<div class="panel" id="uploadPanel">
-  <div class="box">
-    <h3><i class="fa-solid fa-cloud-arrow-up"></i> Upload Mod Baru</h3>
-    <input id="title" placeholder="Judul Mod">
-    <textarea id="desc" rows="3" placeholder="Deskripsi lengkap fitur mod..."></textarea>
-    <select id="category">
-      <option value="APK">APK Mods</option>
-      <option value="GAME">Game Mods</option>
-      <option value="SCRIPT">Script</option>
-      <option value="DLL">DLL</option>
-    </select>
-    <input id="link" placeholder="URL Download (Mediafire/Drive)">
-    
-    <div style="background:#f8fafc; padding:10px; border-radius:10px; margin-bottom:15px; border:1px dashed #cbd5e1;">
-      <label style="font-size:12px; font-weight:600; color:var(--text-muted);"><i class="fa-regular fa-image"></i> Gambar 1 (Cover)</label>
-      <input type="file" id="image1" style="margin:5px 0;">
-      <div class="progress-box"><div class="progress-bar" id="progress1"></div></div>
-      
-      <label style="font-size:12px; font-weight:600; color:var(--text-muted);"><i class="fa-regular fa-images"></i> Gambar Tambahan</label>
-      <input type="file" id="image2" style="margin:5px 0;">
-      <div class="progress-box"><div class="progress-bar" id="progress2"></div></div>
-    </div>
-    
-    <div id="previewImages" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:15px;"></div>
-    
-    <button class="btn-submit" id="saveModBtn">Publikasikan Mod</button>
-    <button id="closeUploadBtn" style="background:#e2e8f0; color:#333; margin-top:10px;">Tutup</button>
-  </div>
-</div>
-
-<!-- Edit Panel -->
-<div class="panel" id="editPanel">
-  <div class="box">
-    <h3><i class="fa-solid fa-pen-to-square"></i> Edit Mod</h3>
-    <div id="editList" style="margin-bottom:15px;"></div>
-    <button id="closeEditPanelBtn" style="background:#e2e8f0; color:#333;">Kembali</button>
-  </div>
-</div>
-
-<!-- Edit Form Panel -->
-<div class="panel" id="editFormPanel">
-  <div class="box">
-    <h3><i class="fa-solid fa-pen-to-square"></i> Update Mod</h3>
-    <select id="editCategory"><option>APK</option><option>GAME</option><option>SCRIPT</option><option>DLL</option></select>
-    <input id="editTitle" placeholder="Judul">
-    <textarea id="editDesc" rows="4"></textarea>
-    <input id="editLink" placeholder="Link Download">
-    <input type="file" id="editImage1">
-    <div class="progress-box"><div class="progress-bar" id="editProgress1"></div></div>
-    <div id="editPreviewImages" style="display:flex; gap:5px; margin-bottom:10px;"></div>
-    
-    <button class="btn-submit" id="updateModBtn">Simpan Perubahan</button>
-    <button id="closeEditFormBottomBtn" style="background:#e2e8f0; color:#333; margin-top:10px;">Batal</button>
-  </div>
-</div>
-
-<!-- DETAIL PAGE (ELASTIC WINDOW) dengan touch-action untuk gesture -->
+<!-- DETAIL PAGE (ELASTIC WINDOW) -->
 <div id="detailPanel" style="touch-action: pan-y;">
   <div class="detail-header">
     <div class="back-btn" id="detailBackBtn"><i class="fa-solid fa-arrow-left"></i></div>
@@ -208,18 +127,8 @@
   </button>
 </div>
 
-<!-- Utilities -->
-<div id="loadingOverlay" style="top:50%; left:50%; transform:translate(-50%, -50%); background:rgba(0,0,0,0.8); padding:15px 25px; border-radius:15px; color:white; font-weight:bold; display:none; flex-direction:column; align-items:center; gap:10px;">
-  <i class="fa-solid fa-circle-notch fa-spin fa-2x"></i> Memproses...
-</div>
-<div id="successPopup" style="top:50%; left:50%; transform:translate(-50%, -50%) scale(0.5); font-size:50px; display:none; background:white; padding:20px; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.2); transition:0.3s; text-align:center;">
-  <span style="display:block; margin-bottom:10px;">✅</span>
-  <span style="font-size:16px; font-weight:bold; color:#333;">Berhasil!</span>
-</div>
-
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>
