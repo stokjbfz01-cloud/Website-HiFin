@@ -219,3 +219,202 @@ document.querySelectorAll(".cat-item").forEach(el => {
     applyFilter();
   });
 });
+
+// ==========================
+// PUBLIC UPLOAD SYSTEM
+// ==========================
+
+const uploadModal = document.getElementById("uploadModal");
+const openUploadBtn = document.getElementById("openUpload");
+
+// OPEN MODAL
+openUploadBtn.onclick = () => {
+  uploadModal.style.display = "flex";
+};
+
+function closeUpload() {
+  uploadModal.style.display = "none";
+}
+
+// CLOUDINARY (SAMA SEPERTI ADMIN)
+async function uploadImagePublic(file) {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('upload_preset', 'Hifin_Web');
+
+  const res = await fetch('https://api.cloudinary.com/v1_1/dvch9imk2/image/upload', {
+    method: 'POST',
+    body: formData
+  });
+
+  const data = await res.json();
+  return data.secure_url;
+}
+
+// QUEUE SYSTEM
+async function processQueuePublic() {
+  if (isUploadingPublic) return;
+  isUploadingPublic = true;
+
+  while (uploadQueuePublic.length > 0) {
+    const { file, index } = uploadQueuePublic.shift();
+    try {
+      const url = await uploadImagePublic(file);
+      uploadedPublic[index] = url;
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  isUploadingPublic = false;
+}
+
+// ================= SAFE INIT =================
+window.addEventListener("DOMContentLoaded", () => {
+
+  const openUploadBtn = document.getElementById("openUpload");
+  const uploadModal = document.getElementById("uploadModal");
+
+  const uImg1 = document.getElementById("uImg1");
+  const uImg2 = document.getElementById("uImg2");
+  const submitBtn = document.getElementById("submitUpload");
+
+  if (!openUploadBtn || !uploadModal) {
+    console.error("Upload element tidak ditemukan!");
+    return;
+  }
+
+  // OPEN MODAL
+  openUploadBtn.onclick = () => {
+    uploadModal.style.display = "flex";
+    document.body.classList.add("no-scroll");
+  };
+
+  window.closeUpload = () => {
+    uploadModal.style.display = "none";
+    document.body.classList.remove("no-scroll");
+  };
+
+  let uploadQueue = [];
+  let uploaded = [null, null];
+  let isUploading = false;
+
+  async function uploadImage(file) {
+  console.log("Mulai upload:", file.name);
+
+  const fd = new FormData();
+  fd.append("file", file);
+  fd.append("upload_preset", "Hifin_Web");
+
+  try {
+    const res = await fetch("https://api.cloudinary.com/v1_1/dvch9imk2/image/upload", {
+      method: "POST",
+      body: fd
+    });
+
+    const data = await res.json();
+
+    console.log("Response Cloudinary:", data);
+
+    if (!data.secure_url) {
+      throw new Error("Upload gagal - URL tidak ada");
+    }
+
+    return data.secure_url;
+
+  } catch (err) {
+    console.error("UPLOAD ERROR:", err);
+    alert("Upload gambar gagal!");
+    return null;
+  }
+}
+
+  async function processQueue() {
+  if (isUploading) return;
+  isUploading = true;
+
+  while (uploadQueue.length > 0) {
+    const { file, index } = uploadQueue.shift();
+
+    const bar = document.getElementById(`pubProg${index+1}`);
+    if (bar) bar.style.width = "30%";
+
+    const url = await uploadImage(file);
+
+    if (url) {
+      uploaded[index] = url;
+      if (bar) {
+        bar.style.width = "100%";
+        bar.style.background = "#22c55e";
+      }
+    } else {
+      if (bar) bar.style.background = "red";
+    }
+  }
+
+  isUploading = false;
+}
+
+  // FIX NULL ERROR DI SINI
+  if (uImg1) {
+  uImg1.onchange = (e) => {
+    console.log("File dipilih (Gambar 1):", e.target.files[0]);
+
+    if (e.target.files[0]) {
+      uploadQueue.push({ file: e.target.files[0], index: 0 });
+      processQueue();
+    }
+  };
+}
+
+  if (uImg2) {
+  uImg2.onchange = (e) => {
+    console.log("File dipilih (Gambar 2):", e.target.files[0]);
+
+    if (e.target.files[0]) {
+      uploadQueue.push({ file: e.target.files[0], index: 1 });
+      processQueue();
+    }
+  };
+}
+
+  if (submitBtn) {
+    console.log("Uploaded images:", uploaded);
+    submitBtn.onclick = async () => {
+      if (isUploading) return alert("Tunggu upload selesai!");
+
+      const title = document.getElementById("uTitle").value;
+      const desc = document.getElementById("uDesc").value;
+      const category = document.getElementById("uCategory").value;
+      const link = document.getElementById("uLink").value;
+
+      console.log("CHECK SUBMIT:");
+console.log("Title:", title);
+console.log("Uploaded:", uploaded);
+
+if (!title) {
+  alert("Judul kosong!");
+  return;
+}
+
+if (!uploaded[0]) {
+  alert("Gambar belum selesai upload!");
+  return;
+}
+
+      await db.collection("mods").add({
+        title,
+        desc,
+        category,
+        link,
+        images: uploaded.filter(i => i !== null),
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      alert("Berhasil upload!");
+      closeUpload();
+    };
+  }
+
+});
