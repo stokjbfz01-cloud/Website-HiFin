@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HiFin Developer - Official Profile</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark: { 950: '#050505', 900: '#0f0f0f', 800: '#18181b', 700: '#27272a' },
+                        brand: { red: '#ef4444', darkRed: '#991b1b', glow: 'rgba(239, 68, 68, 0.4)' }
+                    },
+                    fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'], display: ['Poppins', 'sans-serif'] },
+                }
+            }
+        }
+    </script>
+
+    <link rel="stylesheet" href="../assets/css/profile-page.css">
+</head>
+<body class="p-4 md:p-8 custom-scroll">
+
+    <div class="max-w-6xl mx-auto space-y-8">
+
+        <!-- 1. HERO SECTION -->
+        <section class="reveal delay-1 relative rounded-[40px] overflow-hidden border border-white/5 group">
+            <!-- Background Image with Overlay -->
+            <div class="absolute inset-0 z-0">
+                <img src="https://picsum.photos/seed/hifin/1200/400" class="w-full h-full object-cover opacity-30 grayscale group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-105">
+                <div class="absolute inset-0 bg-gradient-to-r from-dark-950 via-dark-950/90 to-transparent"></div>
+            </div>
+
+            <div class="relative z-10 p-8 md:p-12 flex flex-col md:flex-row items-center gap-8">
+                <!-- Avatar -->
+                <div class="relative">
+                    <div class="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-brand-red p-1 avatar-glow">
+                        <img src="../assets/IMG/profil.png" class="w-full h-full rounded-full object-cover">
+                    </div>
+                    <div class="absolute bottom-2 right-2 bg-green-500 w-8 h-8 rounded-full border-4 border-dark-950 flex items-center justify-center">
+                        <i class="fa-solid fa-check text-white text-[10px]"></i>
+                    </div>
+                </div>
+
+                <!-- Info -->
+                <div class="flex-1 text-center md:text-left">
+                    <div class="flex flex-col md:flex-row items-center gap-3 mb-2">
+                        <h1 class="text-4xl font-display font-bold text-white tracking-tight">HiFin Website</h1>
+                        <span class="bg-brand-red/10 text-brand-red text-[10px] font-bold px-3 py-1 rounded-full border border-brand-red/20 uppercase tracking-widest">Developer & Founder:</span>
+                    </div>
+                    <p class="text-gray-400 font-medium mb-4">@HiFin - ©2026</p>
+                    <p class="text-sm text-gray-500 max-w-xl leading-relaxed mb-6">
+                        Fokus membangun platform mod premium gratis yang cepat, aman, dan nyaman yang bisa diakses oleh semua orang.
+                    </p>
+                    
+                    <!-- Social Links -->
+                    <div class="flex flex-wrap justify-center md:justify-start gap-3">
+    <a href="https://whatsapp.com/channel/0029VbCCbN9AojYwc7gebK3D" target="_blank" class="flex items-center gap-2 bg-dark-800/80 hover:bg-brand-red px-5 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-95 border border-white/5">
+        <i class="fa-brands fa-whatsapp"></i> WhatsApp
+    </a>
+    
+    <a href="https://youtube.com/@sedangberproses-yah?si=A9zEdbNtLRxOVCIu" target="_blank" class="flex items-center gap-2 bg-dark-800/80 hover:bg-brand-red px-5 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-95 border border-white/5">
+        <i class="fa-brands fa-youtube"></i> YouTube
+    </a>
+    
+    <a href="https://website-hi-fin.vercel.app/" target="_blank" class="flex items-center gap-2 bg-dark-800/80 hover:bg-brand-red px-5 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-95 border border-white/5">
+        <i class="fa-solid fa-globe"></i> Website
+    </a>
+</div>
+                </div>
+            </div>
+        </section>
+
+        
+
+        <!-- 3. MAIN BENTO GRID -->
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- LEFT: TENTANG HI FIN -->
+            <div class="reveal delay-3 lg:col-span-2 space-y-6">
+                <div class="bg-dark-900 p-8 rounded-[32px] border border-white/5 h-full">
+                    <div class="flex items-center gap-3 mb-6">
+                        <i class="fa-solid fa-newspaper text-brand-red"></i>
+                        <h4 class="font-display font-bold text-white">Tentang HiFin Mods</h4>
+                    </div>
+                    <div class="space-y-6 text-sm text-gray-400 leading-relaxed">
+                        <p>Selamat datang di <span class="text-white font-bold">HiFin Mods</span>, sebuah platform yang menyediakan berbagai mod premium yang dapat diunduh secara gratis tanpa batasan.</p>
+                        <p>Tidak hanya sebagai tempat mengunduh, HiFin Mods juga dirancang sebagai ruang komunitas di mana pengguna dapat berbagi mod, memberikan komentar, dan saling berinteraksi.</p>
+                        <p>Tujuan utama pengembangan platform ini adalah menghadirkan pengalaman yang nyaman, cepat, dan mudah digunakan, sehingga setiap pengguna dapat menikmati akses mod dengan lebih optimal.</p>
+                        <p>Ke depannya, HiFin Mods akan terus dikembangkan untuk meningkatkan kualitas UI/UX, performa, serta fitur interaktif agar memberikan kenyamanan ekstra bagi seluruh pengguna.</p>
+                    </div>
+
+                    <!-- USP Badges -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-12">
+                        <div class="text-center group">
+                            <div class="w-12 h-12 rounded-full bg-dark-800 mx-auto flex items-center justify-center text-brand-red mb-3 group-hover:scale-110 transition">
+                                <i class="fa-solid fa-bolt"></i>
+                            </div>
+                            <p class="text-[11px] font-bold text-white">Gratis</p>
+                            <p class="text-[9px] text-gray-600">Tanpa Batasan</p>
+                        </div>
+                        <div class="text-center group">
+                            <div class="w-12 h-12 rounded-full bg-dark-800 mx-auto flex items-center justify-center text-green-500 mb-3 group-hover:scale-110 transition">
+                                <i class="fa-solid fa-shield"></i>
+                            </div>
+                            <p class="text-[11px] font-bold text-white">Aman</p>
+                            <p class="text-[9px] text-gray-600">Teruji & Bersih</p>
+                        </div>
+                        <div class="text-center group">
+                            <div class="w-12 h-12 rounded-full bg-dark-800 mx-auto flex items-center justify-center text-orange-500 mb-3 group-hover:scale-110 transition">
+                                <i class="fa-solid fa-gauge-high"></i>
+                            </div>
+                            <p class="text-[11px] font-bold text-white">Cepat</p>
+                            <p class="text-[9px] text-gray-600">Unduhan Kilat</p>
+                        </div>
+                        <div class="text-center group">
+                            <div class="w-12 h-12 rounded-full bg-dark-800 mx-auto flex items-center justify-center text-blue-500 mb-3 group-hover:scale-110 transition">
+                                <i class="fa-solid fa-users"></i>
+                            </div>
+                            <p class="text-[11px] font-bold text-white">Komunitas</p>
+                            <p class="text-[9px] text-gray-600">Saling Berbagi</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        <!-- FOOTER HELP -->
+        <footer class="reveal delay-4 bg-dark-900 p-8 rounded-[32px] border border-white/5 flex flex-col md:flex-row items-center justify-between gap-6">
+    <div>
+        <h4 class="text-xl font-bold text-white mb-1">Butuh Bantuan?</h4>
+        <p class="text-xs text-gray-500">Tim support kami siap membantu kamu kapan saja.</p>
+    </div>
+    <a href="../pages/chat-support.html"
+       class="flex-1 md:flex-none px-8 py-3 rounded-2xl bg-brand-red text-white text-xs font-bold transition shadow-glow-red hover:scale-105 active:scale-95 flex items-center justify-center gap-2">
+        <i class="fa-solid fa-headset"></i>
+        <span>Hubungi Team Support</span>
+    </a>
+</footer>
+    </div>
+
+    <script src="../assets/js/profile-page.js"></script>
+</body>
+</html>
