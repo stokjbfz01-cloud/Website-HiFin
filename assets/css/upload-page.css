@@ -1,0 +1,49 @@
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* Smooth Transition Base */
+* { transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
+
+.step-content { display: none; opacity: 0; }
+.step-content.active { display: block; animation: slideFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+@keyframes slideFadeIn {
+    from { opacity: 0; transform: translateX(20px) scale(0.98); }
+    to { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+@keyframes popIn {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
+}
+.pop-in { animation: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+/* Input Styles & Glow */
+.input-group label { transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); pointer-events: none; }
+.input-field:focus ~ label, .input-field:not(:placeholder-shown) ~ label {
+    transform: translateY(-24px) scale(0.85);
+    color: #e52525;
+    background: #09090b;
+    padding: 0 4px;
+}
+.input-field:focus { box-shadow: 0 4px 20px rgba(229, 37, 37, 0.1); border-color: #e52525; }
+
+.glass { background: rgba(28, 28, 34, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.05); }
+.glass-panel { background: rgba(28, 28, 34, 0.4); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
+
+#progress-indicator { transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+#toast { transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); transform: translateY(100px); opacity: 0; }
+#toast.show { transform: translateY(0); opacity: 1; }
+
+/* Upload Progress Animation */
+@keyframes uploadProgressAnim {
+    0% { width: 0%; }
+    100% { width: 100%; }
+}
+.animate-upload-progress {
+    animation: uploadProgressAnim 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    background: linear-gradient(to right, #f97316, #eab308, #fef08a, #22c55e, #4ade80);
+}
+.slot-success { border-color: #4ade80 !important; box-shadow: 0 0 15px rgba(74, 222, 128, 0.3); }
+
+/* active state scale */
+.btn-active:active { transform: scale(0.95); }
