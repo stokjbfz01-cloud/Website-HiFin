@@ -581,3 +581,75 @@ textarea {
     margin-top: 6px;
     content: "";
 }
+
+/* Notification Badge di Toggle Admin */
+.admin-notif-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    min-width: 20px;
+    height: 20px;
+    background: #ff3333;
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 800;
+    border-radius: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+    letter-spacing: 0;
+    box-shadow: 0 0 10px rgba(255, 51, 51, 0.7);
+    animation: badgePulse 1.5s infinite ease-in-out;
+    z-index: 200;
+    pointer-events: none;
+}
+
+.admin-notif-badge.hidden {
+    display: none;
+}
+
+@keyframes badgePulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 10px rgba(255,51,51,0.6); }
+    50%       { transform: scale(1.2); box-shadow: 0 0 18px rgba(255,51,51,0.9); }
+}
+
+/* Pastikan parent punya position relative */
+.mode-control {
+    position: relative; /* sudah ada, pastikan tidak hilang */
+}
+
+/* Toast Notifikasi Admin */
+.admin-toast {
+    position: fixed;
+    top: 90px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    background: rgba(20, 20, 20, 0.85);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 51, 51, 0.4);
+    border-radius: 50px;
+    padding: 12px 22px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: white;
+    letter-spacing: 0.5px;
+    z-index: 999;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    white-space: nowrap;
+}
+
+.admin-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+.admin-toast i {
+    color: var(--accent-red);
+    font-size: 0.9rem;
+}
