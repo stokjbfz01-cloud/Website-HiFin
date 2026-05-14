@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dashboard Semua Mod - HiFin Mods</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <link rel="stylesheet" href="../assets/css/page-seeall.css">
+</head>
+<body class="font-sans antialiased text-gray-300 selection:bg-brand-red selection:text-white">
+
+    <!-- Ambient Glowing Background -->
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
+
+    <!-- Overlay Background for Detail Panel -->
+    <div id="panelBackdrop" class="fixed inset-0 bg-dark-950/80 backdrop-blur-md z-40 panel-overlay transition-opacity duration-500"></div>
+
+    <!-- Sidebar & App Layout Container -->
+    <div class="flex min-h-screen relative z-10 max-w-[1600px] mx-auto">
+        
+        <!-- Main Content Area -->
+        <main class="flex-1 p-4 md:p-8 w-full">
+            
+            <!-- HEADER TOP: Premium Search & Filters -->
+            <header class="flex flex-col lg:flex-row gap-5 items-center justify-between mb-10 pt-4">
+                
+                <!-- Search Bar -->
+                <div class="relative w-full lg:w-[500px] group">
+                    <div class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+                        <i class="fa-solid fa-magnifying-glass text-gray-500 group-focus-within:text-brand-neon group-focus-within:drop-shadow-glow-sm transition-all duration-300"></i>
+                    </div>
+                    <input type="text" placeholder="Cari mod, game, atau script premium..." 
+                           class="w-full glass-input text-white rounded-2xl py-4 pl-12 pr-6 outline-none placeholder-gray-600 font-medium tracking-wide">
+                    <div class="absolute inset-0 rounded-2xl border border-white/5 pointer-events-none group-focus-within:border-brand-red/0 transition-colors"></div>
+                </div>
+
+                <!-- Filters -->
+                <div class="flex items-center gap-3 w-full lg:w-auto overflow-x-auto no-scrollbar pb-2 lg:pb-0">
+                    <div class="flex items-center bg-dark-800/60 backdrop-blur-xl p-1.5 rounded-2xl border border-white/5 shadow-inner-light whitespace-nowrap">
+                        
+                        <div class="relative flex items-center px-2 group">
+                            <i class="fa-solid fa-arrow-down-short-wide text-gray-500 text-xs mr-2 group-hover:text-brand-neon transition-colors"></i>
+                            <select id="sortSelect" class="bg-transparent text-sm font-semibold text-gray-300 appearance-none outline-none cursor-pointer pr-4 hover:text-white transition-colors">
+                                <option class="bg-dark-900 text-white">Terbaru</option>
+                                <option class="bg-dark-900 text-white">Terpopuler</option>
+                            </select>
+                            <i class="fa-solid fa-chevron-down absolute right-0 text-[10px] text-gray-600 pointer-events-none"></i>
+                        </div>
+                        
+                        <div class="w-[1px] h-6 bg-white/10 mx-2"></div>
+                        
+                        <div class="relative flex items-center px-2 group">
+                            <i class="fa-solid fa-layer-group text-gray-500 text-xs mr-2 group-hover:text-brand-neon transition-colors"></i>
+                            <select id="categorySelect" class="bg-transparent text-sm font-semibold text-gray-300 appearance-none outline-none cursor-pointer pr-4 hover:text-white transition-colors">
+                                <option class="bg-dark-900 text-white">SEMUA Kategori</option>
+                                <option class="bg-dark-900 text-white">APK Mods</option>
+                                <option class="bg-dark-900 text-white">Game Mods</option>
+                                <option class="bg-dark-900 text-white">Scripts</option>
+                                <option class="bg-dark-900 text-white">Lainnya</option>
+                            </select>
+                            <i class="fa-solid fa-chevron-down absolute right-0 text-[10px] text-gray-600 pointer-events-none"></i>
+                        </div>
+
+                    </div>
+                </div>
+            </header>
+
+            <!-- TITLE & META -->
+            <section class="mb-8 relative z-10">
+                <div class="flex flex-col items-start justify-between gap-2">
+                    <div class="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-brand-red/10 border border-brand-red/20 mb-3">
+                        <span class="w-2 h-2 rounded-full bg-brand-neon pulse-dot"></span>
+                        <span class="text-xs font-bold text-brand-neon tracking-wider uppercase">Live Database</span>
+                    </div>
+                    <h2 class="text-4xl md:text-5xl font-display font-bold text-white tracking-tight drop-shadow-md">
+                        Eksplorasi <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-neon to-brand-dark">Modifikasi</span>
+                    </h2>
+                    <div class="flex items-center gap-2 mt-2 opacity-80 text-gray-400">
+                        <i class="fa-solid fa-database text-xs"></i>
+                        <span class="text-sm font-medium">Menampilkan <b id="totalCardCount" class="text-white">0 Card</b> termutakhir</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- GRID CONTAINER -->
+            <div id="mod-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 pb-20 relative z-10">
+                <!-- Skeleton Shimmer injected via JS on loading -->
+            </div>
+
+        </main>
+    </div>
+
+<!-- DETAIL PANEL REDESIGN - Premium Modal/Sheet -->
+<div id="detailPanel" class="fixed inset-y-0 right-0 z-50 bg-dark-900/95 backdrop-blur-3xl w-full md:w-[480px] lg:w-[500px] border-l border-white/5 transform translate-x-full md:translate-x-0 md:translate-y-full overflow-y-auto no-scrollbar shadow-[-20px_0_50px_rgba(0,0,0,0.5)]">
+    
+    <!-- Floating Header Actions -->
+    <div class="absolute top-4 right-4 z-30 flex gap-2">
+        <button onclick="closeDetail()" class="w-10 h-10 rounded-full bg-black/40 backdrop-blur-xl flex items-center justify-center text-white border border-white/10 hover:bg-white/10 hover:border-brand-red hover:text-brand-neon transition-all duration-300 shadow-glass">
+            <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+    </div>
+
+    <!-- Detail Hero Cinematic Image -->
+    <div class="relative w-full h-[400px] bg-dark-950 overflow-hidden">
+        <img id="mainDetailImage" src="" alt="Detail Hero" class="w-full h-full object-cover transition-all duration-500 cubic-bezier-smooth">
+        
+        <!-- Depth Overlays -->
+        <div class="absolute inset-0 bg-gradient-to-t from-dark-900 via-dark-900/40 to-transparent"></div>
+        <div class="absolute inset-0 bg-gradient-to-r from-dark-900/80 via-transparent to-transparent"></div>
+        
+        <!-- Indicator -->
+        <div id="imageCounter" class="absolute top-4 left-4 z-20 flex items-center bg-black/50 backdrop-blur-md px-3 py-1.5 rounded-full text-xs text-white font-semibold border border-white/10 shadow-glass">
+            <i class="fa-solid fa-camera mr-1.5 text-brand-neon"></i> 1 / 1
+        </div>
+
+        <!-- Thumbnail Slider (Floating at bottom of image) -->
+        <div id="thumbnailContainer" class="absolute bottom-16 left-0 w-full px-6 flex gap-3 overflow-x-auto no-scrollbar pb-4 pt-2 z-20">
+            <!-- Injected via JS -->
+        </div>
+    </div>
+
+    <!-- Content Area (Overlapping Image) -->
+    <div class="relative z-20 px-6 pb-24 -mt-10">
+        
+        <!-- Premium Title Card -->
+        <div class="glass-panel p-5 rounded-[24px] shadow-glass mb-8 relative overflow-hidden group">
+            <div class="absolute inset-0 bg-gradient-to-br from-brand-red/5 to-transparent pointer-events-none"></div>
+            <div class="flex items-start justify-between gap-4 relative z-10">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span id="detailCategory" class="bg-brand-red/10 text-brand-neon px-2.5 py-1 rounded-lg text-[10px] font-bold border border-brand-red/20 uppercase tracking-wide">Category</span>
+                        <div class="w-1 h-1 rounded-full bg-gray-600"></div>
+                        <span id="detailVersionSub" class="text-[10px] font-bold text-gray-400 font-mono bg-white/5 px-2 py-1 rounded-lg border border-white/5">V1.0.0</span>
+                    </div>
+                    <h2 id="detailTitle" class="font-display font-bold text-2xl leading-tight text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-brand-neon transition-all duration-300">Title Placeholder</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-col gap-8">
+            
+            <!-- Download Action Premium CTA -->
+            <div class="flex gap-3 relative group">
+                <div class="absolute inset-0 bg-brand-red rounded-[20px] blur-xl opacity-20 group-hover:opacity-40 transition-opacity duration-500"></div>
+                <button id="downloadBtn" class="flex-1 relative btn-premium bg-gradient-to-r from-brand-dark via-brand-red to-brand-glow text-white rounded-[20px] py-4 px-6 font-bold text-sm shadow-glow-md flex items-center justify-center gap-4 border border-white/10">
+                    <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0 backdrop-blur-sm shadow-inner-light">
+                        <i class="fa-solid fa-cloud-arrow-down text-lg"></i>
+                    </div>
+                    <div class="text-left flex-1">
+                        <span class="block text-base tracking-wide uppercase drop-shadow-md">Unduh Sekarang</span>
+                        <span class="block text-[10px] text-white/80 font-medium tracking-widest mt-0.5 flex items-center gap-1">
+                            UKURAN: <b id="detailSizeBtn">-</b>
+                        </span>
+                    </div>
+                </button>
+            </div>
+
+            <!-- Stats Premium Grid -->
+            <div class="grid grid-cols-3 gap-3">
+                <div class="glass-panel rounded-2xl p-4 flex flex-col items-center justify-center text-center hover:bg-white/5 transition-colors duration-300">
+                    <div class="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center mb-2">
+                        <i class="fa-solid fa-fire text-blue-400"></i>
+                    </div>
+                    <span id="detailDownloads" class="text-sm font-display font-bold text-white mb-0.5">0</span>
+                    <span class="text-[10px] text-gray-500 font-medium uppercase tracking-wider">Unduhan</span>
+                </div>
+                <div class="glass-panel rounded-2xl p-4 flex flex-col items-center justify-center text-center hover:bg-white/5 transition-colors duration-300">
+                    <div class="w-8 h-8 rounded-full bg-purple-500/10 flex items-center justify-center mb-2">
+                        <i class="fa-solid fa-sd-card text-purple-400"></i>
+                    </div>
+                    <span id="detailSizeGrid" class="text-sm font-display font-bold text-white mb-0.5">-</span>
+                    <span class="text-[10px] text-gray-500 font-medium uppercase tracking-wider">Ukuran</span>
+                </div>
+                <div class="glass-panel rounded-2xl p-4 flex flex-col items-center justify-center text-center hover:bg-white/5 transition-colors duration-300">
+                    <div class="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center mb-2">
+                        <i class="fa-solid fa-clock-rotate-left text-emerald-400"></i>
+                    </div>
+                    <span id="detailUpdatedAt" class="text-sm font-display font-bold text-white mb-0.5 truncate w-full">Baru</span>
+                    <span class="text-[10px] text-gray-500 font-medium uppercase tracking-wider">Update</span>
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="relative">
+                <h3 class="font-display font-bold text-white mb-4 flex items-center gap-2 text-lg">
+                    <i class="fa-solid fa-align-left text-brand-neon"></i> Deskripsi
+                </h3>
+                <div id="detailDesc" class="glass-panel p-5 rounded-[24px] prose prose-invert max-w-none">
+                    <!-- Injected MD -->
+                </div>
+            </div>
+
+            <!-- Features -->
+            <div>
+                <h3 class="font-display font-bold text-white mb-4 flex items-center gap-2 text-lg">
+                    <i class="fa-solid fa-microchip text-brand-neon"></i> Fitur Premium
+                </h3>
+                <div id="detailFeatures" class="grid grid-cols-1 gap-3">
+                    <!-- Injected Features -->
+                </div>
+            </div>
+
+            <!-- Modern Warning Box -->
+            <div class="bg-gradient-to-r from-yellow-500/10 to-transparent border-l-4 border-yellow-500 rounded-r-2xl p-5 flex gap-4 mt-4 shadow-[inset_0_0_20px_rgba(234,179,8,0.05)]">
+                <div class="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center shrink-0 border border-yellow-500/30">
+                    <i class="fa-solid fa-triangle-exclamation text-yellow-500 text-lg"></i>
+                </div>
+                <div>
+                    <h4 class="text-sm font-display font-bold text-yellow-500 mb-1.5 uppercase tracking-wide">Peringatan Keamanan</h4>
+                    <p class="text-xs text-gray-400 leading-relaxed">Penggunaan modifikasi memiliki risiko. Kami sarankan menggunakan akun cadangan (guest). Resiko banned sepenuhnya ditanggung oleh pengguna.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="../assets/js/page-seeall.js"></script>
+</body>
+</html>
