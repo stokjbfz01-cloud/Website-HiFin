@@ -1,0 +1,1499 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Admin Panel - HiFin Mods</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark: { 900: '#09090b', 800: '#121216', 700: '#1c1c22', 600: '#272730' },
+                        brand: { red: '#e52525', glow: '#ff4b4b', dark: '#8a1010' }
+                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'], display: ['Poppins', 'sans-serif'] },
+                    boxShadow: {
+                        'glow-red': '0 0 20px rgba(229, 37, 37, 0.3)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+                .no-scrollbar::-webkit-scrollbar { display: none; }
+        * { transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
+
+        .step-content { display: none; opacity: 0; }
+        .step-content.active { display: block; animation: slideFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        
+        @keyframes slideFadeIn {
+            from { opacity: 0; transform: translateX(20px) scale(0.98); }
+            to { opacity: 1; transform: translateX(0) scale(1); }
+        }
+
+        .input-group label { transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); pointer-events: none; }
+        .input-field:focus ~ label, .input-field:not(:placeholder-shown) ~ label {
+            transform: translateY(-24px) scale(0.85);
+            color: #e52525;
+            background: #121216; /* Menyesuaikan bg dashboard */
+            padding: 0 4px;
+        }
+        .input-field:focus { box-shadow: 0 4px 20px rgba(229, 37, 37, 0.1); border-color: #e52525; }
+
+        .glass { background: rgba(28, 28, 34, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.05); }
+        .glass-panel { background: rgba(28, 28, 34, 0.4); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        
+        #progress-indicator { transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+        #toast { transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); transform: translate(-50%, 100px); opacity: 0; }
+        #toast.show { transform: translate(-50%, 0); opacity: 1; }
+
+        .slot-success { border-color: #4ade80 !important; box-shadow: 0 0 15px rgba(74, 222, 128, 0.3); }
+        .btn-active:active { transform: scale(0.95); }
+    </style>
+</head>
+<body class="bg-dark-900 text-gray-200 font-sans antialiased">
+
+    <!-- LOGIN OVERLAY -->
+    <div id="login-section" class="fixed inset-0 z-[100] bg-dark-900 flex items-center justify-center p-6">
+        <div class="w-full max-w-md bg-dark-800 border border-white/5 rounded-3xl p-8 shadow-2xl">
+            <div class="text-center mb-8">
+                <div class="text-4xl mb-4">ðŸŽ¯</div>
+                <h1 class="text-2xl font-display font-bold text-white">HiFin Admin</h1>
+                <p class="text-sm text-gray-500">Otentikasi diperlukan untuk melanjutkan</p>
+            </div>
+            <div class="space-y-4">
+                <input type="email" id="adminEmail" placeholder="Email Admin" class="w-full bg-dark-700 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-brand-red transition-all">
+                <input type="password" id="adminPassword" placeholder="Password" class="w-full bg-dark-700 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-brand-red transition-all">
+                <button onclick="handleLogin()" id="loginBtn" class="w-full bg-brand-red text-white font-bold py-3 rounded-xl shadow-glow-red hover:scale-[1.02] active:scale-95 transition-all">Masuk Ke Dashboard</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN DASHBOARD WRAPPER -->
+    <div id="admin-dashboard" class="hidden min-h-screen flex flex-col md:flex-row">
+        
+        <!-- SIDEBAR -->
+<aside class="w-full md:w-64 bg-dark-800 border-r border-white/5 flex flex-col z-40">
+    <div class="p-6">
+        <h2 class="text-xl font-display font-bold text-white"><span class="text-brand-red">HiFin</span> Mods</h2>
+        <p class="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Admin Control Panel</p>
+    </div>
+    
+    <nav class="flex-1 px-4 space-y-2 overflow-y-auto no-scrollbar">
+        <button onclick="switchTab('upload')" class="nav-link w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all hover:bg-white/5 text-gray-400" id="btn-upload">
+            <i class="fa-solid fa-plus-circle w-5"></i> Upload Mod
+        </button>
+        <button onclick="switchTab('manage')" class="nav-link w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all hover:bg-white/5 text-gray-400" id="btn-manage">
+            <i class="fa-solid fa-layer-group w-5"></i> Kelola Konten
+        </button>
+        <button onclick="switchTab('chat-admin')" class="nav-link w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all hover:bg-white/5 text-gray-400" id="btn-chat-admin">
+            <i class="fa-solid fa-comments w-5"></i> Live Chat
+        </button>
+        <button onclick="switchTab('notif')" class="nav-link w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all hover:bg-white/5 text-gray-400" id="btn-notif">
+            <i class="fa-solid fa-bell w-5"></i> Notifications
+        </button>
+        <button onclick="switchTab('announcement')" class="nav-link w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all hover:bg-white/5 text-gray-400" id="btn-announcement">
+            <i class="fa-solid fa-bullhorn w-5"></i> Announcement
+        </button>
+        <button onclick="switchTab('settings')" class="nav-link w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all hover:bg-white/5 text-gray-400" id="btn-settings">
+            <i class="fa-solid fa-gear w-5"></i> Settings
+        </button>
+    </nav>
+
+    <div class="p-4 border-t border-white/5">
+        <button onclick="handleLogout()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-500 hover:bg-red-500/10 transition-all">
+            <i class="fa-solid fa-sign-out-alt w-5"></i> Logout
+        </button>
+    </div>
+</aside>
+
+
+        <!-- CONTENT AREA -->
+        <main class="flex-1 flex flex-col h-screen overflow-hidden bg-dark-900">
+            
+            <!-- HEADER -->
+            <header class="h-16 border-b border-white/5 flex items-center justify-between px-8 bg-dark-800/50 backdrop-blur-md">
+                <h3 id="current-tab-title" class="font-bold text-white uppercase tracking-wider text-xs">Dashboard</h3>
+                <div class="flex items-center gap-4">
+                    <div class="text-right hidden sm:block">
+                        <p class="text-xs font-bold text-white" id="admin-name">Admin HiFin</p>
+                        <p class="text-[10px] text-green-500">System Online</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-full bg-brand-red/20 border border-brand-red/30 flex items-center justify-center text-brand-red">
+                        <i class="fa-solid fa-user-shield"></i>
+                    </div>
+                </div>
+            </header>
+
+            <!-- TAB CONTENT CONTAINER -->
+            <div class="flex-1 overflow-y-auto p-4 md:p-8 no-scrollbar" id="tab-container">
+                
+                <!-- TAB: UPLOAD / EDIT MOD (THE WIZARD) -->
+                                <section id="tab-upload" class="hidden max-w-[480px] mx-auto bg-dark-800 rounded-3xl border border-white/5 overflow-hidden shadow-2xl relative flex flex-col mb-10">
+                    <div class="p-6 bg-dark-800/50 backdrop-blur-md">
+                        <div class="flex justify-between items-center px-2 relative mb-4">
+                            <div class="absolute h-[2px] bg-dark-700 left-8 right-8 top-4 z-0">
+                                <div id="progress-indicator" class="h-full bg-brand-red w-[0%] shadow-[0_0_10px_#e52525]"></div>
+                            </div>
+                            <div class="step-node active relative z-10 flex flex-col items-center gap-2" data-step="1">
+                                <div class="w-8 h-8 rounded-full bg-brand-red text-white flex items-center justify-center text-xs font-bold ring-4 ring-dark-800 transition-all">1</div>
+                                <span class="text-[9px] font-medium text-brand-red">Info</span>
+                            </div>
+                            <div class="step-node relative z-10 flex flex-col items-center gap-2" data-step="2">
+                                <div class="w-8 h-8 rounded-full bg-dark-700 text-gray-500 flex items-center justify-center text-xs font-bold ring-4 ring-dark-800 transition-all">2</div>
+                                <span class="text-[9px] font-medium text-gray-500">Media</span>
+                            </div>
+                            <div class="step-node relative z-10 flex flex-col items-center gap-2" data-step="3">
+                                <div class="w-8 h-8 rounded-full bg-dark-700 text-gray-500 flex items-center justify-center text-xs font-bold ring-4 ring-dark-800 transition-all">3</div>
+                                <span class="text-[9px] font-medium text-gray-500">Preview</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="px-6 pb-28 h-[550px] overflow-y-auto no-scrollbar">
+                        <div id="step-1" class="step-content active space-y-6">
+                            <div class="input-group relative">
+                                <input type="text" id="modName" placeholder=" " class="input-field w-full bg-transparent border-b-2 border-dark-700 py-2 outline-none transition-all text-sm">
+                                <label class="absolute left-0 top-2 text-gray-500 text-sm">Nama Mod</label>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="input-group relative">
+                                    <input type="text" id="modVersion" placeholder=" " class="input-field w-full bg-transparent border-b-2 border-dark-700 py-2 outline-none transition-all text-sm">
+                                    <label class="absolute left-0 top-2 text-gray-500 text-sm">Versi (v1.0)</label>
+                                </div>
+                                <select id="modCategory" class="bg-dark-700 border border-white/5 rounded-xl p-3 text-sm outline-none focus:border-brand-red">
+    <option value="Game Mod">Game Mod</option>
+    <option value="APK Tool">APK Tool</option>
+    <option value="Script">Script</option>
+    <option value="Lainnya">Lainnya</option> </select>
+                            </div>
+                            <textarea id="modDesc" placeholder="Deskripsi..." class="w-full bg-dark-700 border border-white/5 rounded-xl p-4 text-sm outline-none focus:border-brand-red min-h-[120px]"></textarea>
+                            
+                            <div>
+                                <div class="flex justify-between items-center mb-3">
+                                    <label class="text-xs font-bold text-gray-400">Fitur Utama</label>
+                                    <button onclick="toggleFeatureInput()" class="text-[10px] bg-brand-red/10 text-brand-red px-2 py-1 rounded-lg">+ Tambah</button>
+                                </div>
+                                <div id="feature-input-container" class="hidden gap-2 mb-3">
+                                    <input type="text" id="featureInput" class="flex-1 bg-dark-700 border border-white/5 rounded-lg px-3 py-1 text-xs outline-none" placeholder="Nama fitur...">
+                                    <button onclick="saveFeature()" class="bg-brand-red px-3 py-1 rounded-lg text-[10px] font-bold">Add</button>
+                                </div>
+                                <div id="feature-list" class="flex flex-wrap gap-2"></div>
+                            </div>
+                        </div>
+
+                        <div id="step-2" class="step-content space-y-6">
+    <div class="grid grid-cols-2 gap-4">
+
+        <!-- SLOT 0 -->
+        <div id="slot-container-0" class="relative aspect-[4/3] bg-dark-700 border-2 border-dashed border-dark-600 rounded-2xl overflow-hidden">
+            <input type="file" id="review0" class="hidden" accept="image/*" onchange="handleSlotUpload(this, 0)">
+            <label for="review0" id="label-slot-0" class="absolute inset-0 flex flex-col items-center justify-center cursor-pointer">
+                <i class="fa-solid fa-camera text-gray-500 mb-1"></i>
+                <span class="text-[9px] text-gray-500">Slot 1</span>
+            </label>
+            <div class="absolute bottom-0 left-0 w-full h-1 bg-dark-900">
+                <div id="progress-slot-0" class="h-full w-0 shadow-[0_0_8px_#4ade80]"></div>
+            </div>
+            <img id="img-slot-0" class="absolute inset-0 w-full h-full object-cover hidden">
+            <button onclick="removeImage(0)" id="del-slot-0" class="absolute top-2 right-2 w-6 h-6 bg-black/60 rounded-full flex items-center justify-center text-white text-[10px] hidden z-30">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <!-- SLOT 1 -->
+        <div id="slot-container-1" class="relative aspect-[4/3] bg-dark-700 border-2 border-dashed border-dark-600 rounded-2xl overflow-hidden">
+            <input type="file" id="review1" class="hidden" accept="image/*" onchange="handleSlotUpload(this, 1)">
+            <label for="review1" id="label-slot-1" class="absolute inset-0 flex flex-col items-center justify-center cursor-pointer">
+                <i class="fa-solid fa-camera text-gray-500 mb-1"></i>
+                <span class="text-[9px] text-gray-500">Slot 2</span>
+            </label>
+            <div class="absolute bottom-0 left-0 w-full h-1 bg-dark-900">
+                <div id="progress-slot-1" class="h-full w-0 shadow-[0_0_8px_#4ade80]"></div>
+            </div>
+            <img id="img-slot-1" class="absolute inset-0 w-full h-full object-cover hidden">
+            <button onclick="removeImage(1)" id="del-slot-1" class="absolute top-2 right-2 w-6 h-6 bg-black/60 rounded-full flex items-center justify-center text-white text-[10px] hidden z-30">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <!-- SLOT 2 -->
+        <div id="slot-container-2" class="relative aspect-[4/3] bg-dark-700 border-2 border-dashed border-dark-600 rounded-2xl overflow-hidden">
+            <input type="file" id="review2" class="hidden" accept="image/*" onchange="handleSlotUpload(this, 2)">
+            <label for="review2" id="label-slot-2" class="absolute inset-0 flex flex-col items-center justify-center cursor-pointer">
+                <i class="fa-solid fa-camera text-gray-500 mb-1"></i>
+                <span class="text-[9px] text-gray-500">Slot 3</span>
+            </label>
+            <div class="absolute bottom-0 left-0 w-full h-1 bg-dark-900">
+                <div id="progress-slot-2" class="h-full w-0 shadow-[0_0_8px_#4ade80]"></div>
+            </div>
+            <img id="img-slot-2" class="absolute inset-0 w-full h-full object-cover hidden">
+            <button onclick="removeImage(2)" id="del-slot-2" class="absolute top-2 right-2 w-6 h-6 bg-black/60 rounded-full flex items-center justify-center text-white text-[10px] hidden z-30">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <!-- SLOT 3 -->
+        <div id="slot-container-3" class="relative aspect-[4/3] bg-dark-700 border-2 border-dashed border-dark-600 rounded-2xl overflow-hidden">
+            <input type="file" id="review3" class="hidden" accept="image/*" onchange="handleSlotUpload(this, 3)">
+            <label for="review3" id="label-slot-3" class="absolute inset-0 flex flex-col items-center justify-center cursor-pointer">
+                <i class="fa-solid fa-camera text-gray-500 mb-1"></i>
+                <span class="text-[9px] text-gray-500">Slot 4</span>
+            </label>
+            <div class="absolute bottom-0 left-0 w-full h-1 bg-dark-900">
+                <div id="progress-slot-3" class="h-full w-0 shadow-[0_0_8px_#4ade80]"></div>
+            </div>
+            <img id="img-slot-3" class="absolute inset-0 w-full h-full object-cover hidden">
+            <button onclick="removeImage(3)" id="del-slot-3" class="absolute top-2 right-2 w-6 h-6 bg-black/60 rounded-full flex items-center justify-center text-white text-[10px] hidden z-30">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+    </div>
+                            <div class="space-y-4 pt-4 border-t border-white/5">
+                                <div class="input-group relative">
+                                    <input type="url" id="modLink" placeholder=" " class="input-field w-full bg-transparent border-b-2 border-dark-700 py-2 outline-none transition-all text-sm">
+                                    <label class="absolute left-0 top-2 text-gray-500 text-sm">Link Download (URL)</label>
+                                </div>
+                                <div class="input-group relative">
+                                    <input type="text" id="modSize" placeholder=" " class="input-field w-full bg-transparent border-b-2 border-dark-700 py-2 outline-none transition-all text-sm">
+                                    <label class="absolute left-0 top-2 text-gray-500 text-sm">Ukuran (Misal: 120 MB)</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="step-3" class="step-content">
+                            <div class="w-full bg-dark-900 rounded-3xl overflow-hidden border border-white/5 pb-6">
+                                <div class="relative w-full h-[180px] bg-dark-800">
+                                    <img id="prevMainImage" src="" class="w-full h-full object-cover">
+                                    <div class="absolute inset-0 bg-gradient-to-t from-dark-900 via-transparent to-transparent"></div>
+                                </div>
+                                <div class="px-4">
+                                    <div class="glass-panel p-4 rounded-2xl -mt-8 relative mb-4">
+                                        <h2 id="prevTitle" class="font-bold text-white text-base">Nama Mod</h2>
+                                        <div class="flex items-center gap-2 mt-1">
+                                            <span id="prevCategory" class="bg-brand-red/20 text-brand-red px-2 py-0.5 rounded text-[10px] font-bold">Kategori</span>
+                                            <span id="prevVersion" class="text-gray-500 text-[10px]">v1.0</span>
+                                        </div>
+                                    </div>
+                                    <div id="prevFeaturesContainer" class="flex flex-wrap gap-2 mb-4"></div>
+                                    <p id="prevDesc" class="text-[10px] text-gray-400 line-clamp-3 mb-4"></p>
+                                    <div class="bg-gradient-to-r from-brand-dark to-brand-red text-white rounded-xl py-3 text-center text-xs font-bold shadow-glow-red">
+                                        Download (<span id="prevSize">0 MB</span>)
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="absolute bottom-0 left-0 w-full p-6 bg-dark-800/90 backdrop-blur-md border-t border-white/5 flex gap-3">
+                        <button id="prevBtn" onclick="goBackStep()" class="hidden flex-1 py-3 bg-dark-700 text-white rounded-xl text-sm font-bold">Kembali</button>
+                        <button id="nextBtn" onclick="nextStep()" class="flex-[2] py-3 bg-brand-red text-white rounded-xl text-sm font-bold shadow-glow-red flex items-center justify-center gap-2">
+                            <span>Berikutnya</span> <i class="fa-solid fa-arrow-right text-xs" id="btnIcon"></i>
+                        </button>
+                    </div>
+                </section>
+
+                <!-- TAB: MANAGE CONTENT -->
+                <section id="tab-manage" class="hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h4 class="font-bold text-white">Database Mod</h4>
+                        <div class="relative">
+                            <input type="text" id="searchMod" placeholder="Cari mod..." class="bg-dark-800 border border-white/5 rounded-full px-4 py-2 text-xs outline-none focus:border-brand-red w-48 md:w-64">
+                        </div>
+                    </div>
+                    <div id="admin-mod-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Card mods loaded here -->
+                    </div>
+                </section>
+
+                <!-- TAB: NOTIFICATIONS -->
+                <section id="tab-notif" class="hidden max-w-2xl mx-auto space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h4 class="font-bold text-white">Activity Logs</h4>
+                        <button onclick="clearNotifs()" class="text-[10px] text-gray-500 hover:text-white">Clear All</button>
+                    </div>
+                    <div id="notif-list" class="space-y-3">
+                        <!-- Notification items -->
+                    </div>
+                </section>
+
+                <!-- TAB: ANNOUNCEMENT -->
+<section id="tab-announcement" class="hidden max-w-xl mx-auto">
+    <div class="bg-dark-800 p-6 rounded-3xl border border-white/5 space-y-4">
+        <h4 class="font-bold text-white">Broadcast Announcement</h4>
+        
+        <!-- Input Teks judul -->
+        <div class="input-group relative">
+            <input type="text" id="note-judul" placeholder=" " class="input-field w-full bg-dark-700 border border-white/5 rounded-xl px-4 py-3 outline-none text-sm focus:border-brand-red transition-all">
+            <label class="absolute left-4 top-3 text-gray-500 text-xs pointer-events-none transition-all">Judul Announcement</label>
+        </div>
+        
+        <!-- Input Teks Pengumuman -->
+        <textarea id="note-text" placeholder="Tulis pengumuman baru..." class="w-full bg-dark-700 border border-white/5 rounded-xl p-4 text-sm outline-none min-h-[120px]"></textarea>
+
+        <!-- Tambahan: Input Link Tautan -->
+        <div class="input-group relative">
+            <input type="url" id="note-link" placeholder=" " class="input-field w-full bg-dark-700 border border-white/5 rounded-xl px-4 py-3 outline-none text-sm focus:border-brand-red transition-all">
+            <label class="absolute left-4 top-3 text-gray-500 text-xs pointer-events-none transition-all">Link Tautan (Opsional)</label>
+        </div>
+
+        <!-- Tambahan: UI Upload Gambar -->
+        <div class="space-y-2">
+            <label class="text-[10px] text-gray-500 uppercase font-bold">Gambar Pengumuman</label>
+            <div id="announcement-img-container" class="relative aspect-video bg-dark-700 border-2 border-dashed border-dark-600 rounded-2xl overflow-hidden flex items-center justify-center">
+                <input type="file" id="note-image-input" class="hidden" accept="image/*" onchange="handleAnnouncementImage(this)">
+                <label for="note-image-input" id="note-image-label" class="flex flex-col items-center cursor-pointer">
+                    <i class="fa-solid fa-image text-gray-500 text-2xl mb-2"></i>
+                    <span class="text-xs text-gray-500">Klik untuk upload gambar</span>
+                </label>
+                <img id="note-image-preview" class="absolute inset-0 w-full h-full object-cover hidden">
+                <button onclick="removeAnnouncementImage()" id="note-image-del" class="absolute top-2 right-2 w-8 h-8 bg-black/60 rounded-full text-white hidden z-10"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <div class="flex-1">
+                <label class="text-[10px] text-gray-500 block mb-1">Status</label>
+                <select id="note-status" class="w-full bg-dark-700 border border-white/5 rounded-xl p-3 text-sm outline-none">
+                    <option value="active">Aktif (Tampilkan)</option>
+                    <option value="inactive">Non-Aktif</option>
+                </select>
+            </div>
+        </div>
+        <button onclick="saveAnnouncement()" id="btn-save-announcement" class="w-full bg-brand-red text-white font-bold py-3 rounded-xl shadow-glow-red mt-4 transition-all active:scale-95">
+            Simpan & Publikasikan
+        </button>
+    </div>
+</section>
+
+<!-- TAB: CHAT ADMIN -->
+<section id="tab-chat-admin" class="hidden h-full">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-120px)]">
+        <!-- LIST USER (Kiri) -->
+        <div class="lg:col-span-1 bg-dark-800 rounded-3xl border border-white/5 flex flex-col overflow-hidden">
+            <div class="p-4 border-b border-white/5">
+                <h3 class="font-bold text-white">Chat User</h3>
+            </div>
+            <div id="admin-chat-list" class="flex-1 overflow-y-auto p-2 space-y-2 no-scrollbar">
+                <!-- User items di sini -->
+            </div>
+        </div>
+
+        <!-- AREA CHAT (Kanan) -->
+        <div class="lg:col-span-2 flex flex-col bg-dark-800 rounded-3xl border border-white/5 overflow-hidden">
+            <div id="admin-chat-messages" class="flex-1 overflow-y-auto p-6 space-y-4 no-scrollbar bg-dark-900/30">
+                <!-- Bubble chat di sini -->
+            </div>
+            <div class="p-4 bg-dark-800 border-t border-white/5">
+                <div class="flex gap-3 bg-dark-700 p-2 rounded-2xl">
+                    <input type="text" id="adminReplyInput" placeholder="Balas pesan user..." 
+                           class="flex-1 bg-transparent px-4 py-2 outline-none text-white text-sm">
+                    <button onclick="sendAdminReply()" class="bg-brand-red hover:bg-brand-dark px-6 py-2 rounded-xl font-bold text-white transition-all">
+                        Kirim
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+                <!-- TAB: SETTINGS -->
+                <section id="tab-settings" class="hidden max-w-xl mx-auto">
+                    <div class="bg-dark-800 p-6 rounded-3xl border border-white/5 space-y-6">
+                        <h4 class="font-bold text-white">Platform Configuration</h4>
+                        
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center p-4 bg-dark-700 rounded-2xl">
+                                <div>
+                                    <p class="text-sm font-bold text-white">Approval System</p>
+                                    <p class="text-[10px] text-gray-500">Mod baru butuh persetujuan admin</p>
+                                </div>
+                                <input type="checkbox" id="set-approval" class="w-10 h-5 bg-dark-600 rounded-full appearance-none checked:bg-brand-red transition-all cursor-pointer relative after:content-[''] after:absolute after:w-4 after:h-4 after:bg-white after:rounded-full after:top-0.5 after:left-0.5 checked:after:left-5 after:transition-all">
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="bg-dark-700 p-4 rounded-2xl">
+                                    <label class="text-[10px] text-gray-500 block mb-2">Upload Limit / Day</label>
+                                    <input type="number" id="set-limit" class="bg-transparent border-b border-white/10 w-full outline-none text-white font-bold">
+                                </div>
+                                <div class="bg-dark-700 p-4 rounded-2xl">
+                                    <label class="text-[10px] text-gray-500 block mb-2">Max File Size (MB)</label>
+                                    <input type="number" id="set-maxsize" class="bg-transparent border-b border-white/10 w-full outline-none text-white font-bold">
+                                </div>
+                            </div>
+                        </div>
+
+                        <button onclick="saveSettings()" class="w-full bg-white/10 text-white font-bold py-3 rounded-xl hover:bg-white/20 transition-all mt-4 border border-white/5">Update Settings</button>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+    
+    <div id="preview-modal" class="fixed inset-0 z-[300] bg-black/90 backdrop-blur-sm hidden flex justify-center items-center p-4">
+    <div class="w-full max-w-[430px] bg-dark-900 rounded-[2.5rem] overflow-hidden border border-white/5 shadow-2xl relative max-h-[90vh] overflow-y-auto no-scrollbar">
+        
+        <button onclick="closePreviewModal()" class="absolute top-4 right-4 z-50 w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/10 hover:bg-brand-red transition-all">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <div class="relative w-full h-64 bg-dark-800">
+            <img id="m-prev-img" src="" class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-gradient-to-t from-dark-900 via-transparent to-transparent"></div>
+        </div>
+
+        <div class="px-6 -mt-10 relative z-10 pb-8">
+            <div class="glass-panel p-5 rounded-3xl border border-white/10 shadow-xl mb-6">
+                <h2 id="m-prev-title" class="text-xl font-display font-bold text-white mb-2">Nama Mod</h2>
+                <div class="flex items-center gap-3">
+                    <span id="m-prev-cat" class="bg-brand-red/20 text-brand-red px-3 py-1 rounded-lg text-[10px] font-bold border border-brand-red/30">Category</span>
+                    <span id="m-prev-ver" class="text-gray-500 text-xs font-medium">v1.0</span>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Fitur Utama</h3>
+                <div id="m-prev-features" class="flex flex-wrap gap-2">
+                    </div>
+            </div>
+
+            <div class="mb-6">
+                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Deskripsi</h3>
+                <p id="m-prev-desc" class="text-xs text-gray-400 leading-relaxed whitespace-pre-wrap"></p>
+            </div>
+
+            <button class="w-full py-4 bg-gradient-to-r from-brand-dark to-brand-red text-white rounded-2xl font-bold text-sm shadow-glow-red flex items-center justify-center gap-3 pointer-events-none">
+                <i class="fa-solid fa-bolt"></i>
+                <span>Download Sekarang (<span id="m-prev-size">0 MB</span>)</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+    <!-- TOAST -->
+    <div id="toast" class="fixed bottom-10 left-1/2 z-[200] glass px-6 py-4 rounded-2xl flex items-center gap-3 border border-brand-red/30 shadow-2xl pointer-events-none">
+        <i class="fa-solid fa-circle-info text-brand-red"></i>
+        <span id="toast-text" class="text-sm font-medium text-white">Action Completed</span>
+    </div>
+
+    <!-- SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+
+    <script>
+    
+                // STATE
+        let currentTab = 'upload';
+        let currentStep = 1;
+        const totalSteps = 3;
+        let editId = null;
+        let uploadedImages = [null, null, null, null];
+        let modFeatures = [];
+        let announcementImageData = null;
+        let activeAdminChatId = null;
+        let unsubscribeChats = null;
+        let unsubscribeMessages = null;
+
+const firebaseConfig = {
+    apiKey: "AIzaSyBoGzExHCZvLNnLHggB2sbst0t4l-tc3Mk",
+    authDomain: "mods-31307.firebaseapp.com",
+    projectId: "mods-31307",
+    storageBucket: "mods-31307.appspot.com",
+    messagingSenderId: "913890186204",
+    appId: "1:913890186204:web:4a652535f0fba62bda7519"
+};
+
+firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const storage = firebase.storage();
+
+    db.settings({ experimentalAutoDetectLongPolling: true });
+    
+    auth.onAuthStateChanged(async (user) => {
+    if (user) {
+        document.getElementById('login-section').classList.add('hidden');
+        document.getElementById('admin-dashboard').classList.remove('hidden');
+        
+        try {
+            // Pastikan koneksi aktif sebelum ambil data
+            await db.enableNetwork(); 
+            
+            await Promise.all([
+                loadSettings(),
+                loadAnnouncements(),
+                loadMods(),
+                loadNotifs()
+            ]);
+            loadAdminChats();
+        } catch (err) {
+            console.error("Inisialisasi data gagal:", err);
+        }
+    } else {
+        document.getElementById('login-section').classList.remove('hidden');
+        document.getElementById('admin-dashboard').classList.add('hidden');
+    }
+});
+
+function handleLogout() {
+    if (unsubscribeChats) unsubscribeChats();
+    if (unsubscribeMessages) unsubscribeMessages();
+    auth.signOut().then(() => location.reload());
+}
+
+function openDetailCard(mod) {
+        console.log("Previewing mod:", mod);
+        // Tambahkan logika preview jika diperlukan
+    }
+        
+        /* --- NAVIGATION --- */
+        function updateProgress() {
+    // 1. Ambil elemen-elemen utama
+    const progressIndicator = document.getElementById('progress-indicator');
+    const nextBtn = document.getElementById('nextBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtnIcon = document.getElementById('btnIcon');
+
+    // Jika progress bar tidak ada, hentikan fungsi agar tidak error (Guard Clause)
+    if (!progressIndicator) return;
+
+    // 2. Update lebar progress bar
+    const progress = ((currentStep - 1) / (totalSteps - 1)) * 100;
+    progressIndicator.style.width = progress + '%';
+    
+    // 3. Update tampilan Node Step (Angka 1, 2, 3)
+    document.querySelectorAll('.step-node').forEach(node => {
+        const nodeStep = parseInt(node.getAttribute('data-step'));
+        const icon = node.querySelector('div');
+        const label = node.querySelector('span');
+        
+        if (!icon || !label) return; // Pastikan elemen di dalam node ada
+
+        if (nodeStep < currentStep) {
+            // Step yang sudah dilewati (Centang Hijau)
+            icon.className = "w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center text-xs font-bold ring-4 ring-dark-800 scale-90";
+            icon.innerHTML = '<i class="fa-solid fa-check"></i>';
+            label.className = "text-[9px] font-medium text-green-500";
+        } else if (nodeStep === currentStep) {
+            // Step yang sedang aktif (Merah)
+            icon.className = "w-8 h-8 rounded-full bg-brand-red text-white flex items-center justify-center text-xs font-bold ring-4 ring-dark-800 scale-105";
+            icon.innerHTML = nodeStep;
+            label.className = "text-[9px] font-medium text-brand-red";
+        } else {
+            // Step yang belum tercapai (Abu-abu)
+            icon.className = "w-8 h-8 rounded-full bg-dark-700 text-gray-500 flex items-center justify-center text-xs font-bold ring-4 ring-dark-800";
+            icon.innerHTML = nodeStep;
+            label.className = "text-[9px] font-medium text-gray-500";
+        }
+    });
+
+    // 4. Update Tombol "Kembali" (Sembunyikan jika di Step 1)
+    if (prevBtn) {
+        prevBtn.classList.toggle('hidden', currentStep === 1);
+    }
+    
+    // 5. Update Teks dan Ikon Tombol "Berikutnya"
+    if (nextBtn) {
+        const nextBtnText = nextBtn.querySelector('span');
+        
+        if (currentStep === 3) {
+            // Jika di step terakhir (Preview), ubah teks jadi Publish/Update
+            if (nextBtnText) {
+                nextBtnText.innerText = editId ? 'Update Mod' : 'Publish Mod';
+            }
+            if (nextBtnIcon) {
+                nextBtnIcon.className = "fa-solid fa-paper-plane text-xs";
+            }
+        } else {
+            // Jika di step biasa, teksnya "Berikutnya"
+            if (nextBtnText) {
+                nextBtnText.innerText = 'Berikutnya';
+            }
+            if (nextBtnIcon) {
+                nextBtnIcon.className = "fa-solid fa-arrow-right text-xs";
+            }
+        }
+    }
+}
+
+        function nextStep() {
+            if (currentStep === 1) {
+                if (!document.getElementById('modName').value) return showToast("Nama mod wajib diisi");
+            }
+            if (currentStep === 2) {
+                if (!uploadedImages.some(img => img !== null)) return showToast("Upload minimal 1 gambar");
+                updatePreview();
+            }
+            if (currentStep === 3) {
+                publishMod();
+                return;
+            }
+
+            if (currentStep < totalSteps) {
+                document.getElementById(`step-${currentStep}`).classList.remove('active');
+                currentStep++;
+                document.getElementById(`step-${currentStep}`).classList.add('active');
+                updateProgress();
+            }
+        }
+
+        function goBackStep() {
+            if (currentStep > 1) {
+                document.getElementById(`step-${currentStep}`).classList.remove('active');
+                currentStep--;
+                document.getElementById(`step-${currentStep}`).classList.add('active');
+                updateProgress();
+            }
+        }
+
+        /* --- FEATURES --- */
+        function toggleFeatureInput() {
+            document.getElementById('feature-input-container').classList.toggle('hidden');
+        }
+
+        function saveFeature() {
+            const val = document.getElementById('featureInput').value.trim();
+            if(val) {
+                modFeatures.push(val);
+                renderFeatures();
+                document.getElementById('featureInput').value = '';
+            }
+        }
+
+        function removeFeature(idx) {
+            modFeatures.splice(idx, 1);
+            renderFeatures();
+        }
+
+        function renderFeatures() {
+            const list = document.getElementById('feature-list');
+            list.innerHTML = modFeatures.map((f, i) => `
+                <div class="flex items-center gap-2 bg-brand-red/10 border border-brand-red/20 text-brand-red px-2 py-1 rounded-lg text-[10px]">
+                    ${f} <button onclick="removeFeature(${i})"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+            `).join('');
+        }
+
+        function handleSlotUpload(inputEl, index) {
+    const file = inputEl.files[0];
+    if (!file) return;
+
+    // Validasi ukuran (Maks 800KB agar Firestore tidak overload)
+    if (file.size > 1000000) {
+        showToast("Gambar terlalu besar! Maksimal 800KB");
+        inputEl.value = "";
+        return;
+    }
+
+    const progressBar = document.getElementById(`progress-slot-${index}`);
+    const label = document.getElementById(`label-slot-${index}`);
+    const imgEl = document.getElementById(`img-slot-${index}`);
+    const delBtn = document.getElementById(`del-slot-${index}`);
+    const container = document.getElementById(`slot-container-${index}`);
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const base64Data = e.target.result;
+        
+        // Simpan ke array global (state)
+        uploadedImages[index] = base64Data;
+
+        // Update UI secara instan
+        imgEl.src = base64Data;
+        imgEl.classList.remove('hidden');
+        label.classList.add('hidden');
+        delBtn.classList.remove('hidden');
+        container.classList.add('slot-success');
+        
+        // Progress bar langsung hijau
+        progressBar.style.width = "100%";
+        progressBar.style.background = "#4ade80";
+        showToast(`Gambar ${index + 1} siap!`);
+    };
+    reader.readAsDataURL(file);
+}
+
+async function editMod(id) {
+    try {
+        showToast("Mengambil data...");
+        const doc = await db.collection('mods').doc(id).get();
+        if (!doc.exists) return showToast("Data tidak ditemukan");
+        
+        const data = doc.data();
+        editId = id;
+
+        // 1. Isi input text
+        document.getElementById('modName').value = data.title || "";
+        document.getElementById('modVersion').value = data.version || "";
+        document.getElementById('modCategory').value = data.category || "Lainnya";
+        document.getElementById('modDesc').value = data.desc || "";
+        document.getElementById('modLink').value = data.link || "";
+        document.getElementById('modSize').value = data.size || "";
+        modFeatures = data.features || [];
+        
+        // 2. Reset status gambar lama
+        uploadedImages = [null, null, null, null];
+        for(let i=0; i<4; i++) {
+            // Bersihkan tampilan slot
+            const imgEl = document.getElementById(`img-slot-${i}`);
+            const label = document.getElementById(`label-slot-${i}`);
+            const delBtn = document.getElementById(`del-slot-${i}`);
+            const container = document.getElementById(`slot-container-${i}`);
+            const progress = document.getElementById(`progress-slot-${i}`);
+            const input = document.getElementById(`review${i}`);
+
+            input.value = ""; // Reset input file
+            imgEl.classList.add('hidden');
+            label.classList.remove('hidden');
+            delBtn.classList.add('hidden');
+            container.classList.remove('slot-success');
+            progress.style.width = "0%";
+
+            // 3. Masukkan gambar dari database jika ada
+            if(data.images && data.images[i]) {
+                uploadedImages[i] = data.images[i];
+                imgEl.src = data.images[i];
+                imgEl.classList.remove('hidden');
+                label.classList.add('hidden');
+                delBtn.classList.remove('hidden');
+                container.classList.add('slot-success');
+                progress.style.width = "100%";
+                progress.style.background = "#4ade80";
+            }
+        }
+
+        renderFeatures();
+        switchTab('upload'); // Pindah ke tab wizard
+        currentStep = 1;
+        
+        // Update tampilan wizard
+        document.querySelectorAll('.step-content').forEach(s => s.classList.remove('active'));
+        document.getElementById('step-1').classList.add('active');
+        updateProgress();
+
+    } catch (err) {
+        console.error(err);
+        showToast("Gagal memuat data edit");
+    }
+}
+
+        function removeImage(idx) {
+    uploadedImages[idx] = null;
+    const input = document.getElementById(`review${idx}`);
+    if(input) input.value = ""; // Penting: Reset input file agar bisa upload ulang file yang sama
+    
+    document.getElementById(`img-slot-${idx}`).classList.add('hidden');
+    document.getElementById(`img-slot-${idx}`).src = "";
+    document.getElementById(`label-slot-${idx}`).classList.remove('hidden');
+    document.getElementById(`del-slot-${idx}`).classList.add('hidden');
+    document.getElementById(`slot-container-${idx}`).classList.remove('slot-success');
+    document.getElementById(`progress-slot-${idx}`).style.width = "0";
+}
+
+        /* --- PREVIEW --- */
+        function updatePreview() {
+            document.getElementById('prevTitle').innerText = document.getElementById('modName').value;
+            document.getElementById('prevCategory').innerText = document.getElementById('modCategory').value;
+            document.getElementById('prevVersion').innerText = document.getElementById('modVersion').value || 'v1.0';
+            document.getElementById('prevDesc').innerText = document.getElementById('modDesc').value;
+            document.getElementById('prevSize').innerText = document.getElementById('modSize').value || '0 MB';
+            document.getElementById('prevMainImage').src = uploadedImages.find(i => i !== null);
+            
+            document.getElementById('prevFeaturesContainer').innerHTML = modFeatures.map(f => `
+                <span class="bg-dark-700 text-gray-300 px-2 py-1 rounded text-[9px] border border-white/5"> ${f}</span>
+            `).join('');
+        }
+
+        /* --- DATABASE ACTIONS --- */
+                async function publishMod() {
+    // Persiapkan data dasar
+    const data = {
+        title: document.getElementById('modName').value,
+        version: document.getElementById('modVersion').value || 'v1.0',
+        category: document.getElementById('modCategory').value,
+        desc: document.getElementById('modDesc').value,
+        link: document.getElementById('modLink').value,
+        size: document.getElementById('modSize').value,
+        features: modFeatures,
+        images: uploadedImages.filter(img => img !== null),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        // PERBAIKAN DI SINI:
+        // Karena ini diupload oleh Admin, maka status otomatis "approved"
+        status: "approved" 
+    };
+
+    try {
+        const btn = document.getElementById('nextBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Menyimpan...';
+
+        if(editId) {
+            // Update data yang sudah ada
+            await db.collection('mods').doc(editId).update(data);
+            logAction('edit', `Admin memperbarui mod: ${data.title}`);
+            showToast("Mod Berhasil Diupdate!");
+        } else {
+            // Tambahkan createdAt hanya saat pertama kali buat
+            data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+            await db.collection('mods').add(data);
+            logAction('upload', `Admin mengupload mod baru: ${data.title}`);
+            showToast("Mod Baru Berhasil Disimpan!");
+        }
+
+        resetWizard();
+        switchTab('manage');
+        loadMods();
+    } catch(e) { 
+        console.error(e);
+        showToast("Gagal menyimpan data"); 
+    } finally {
+        const btn = document.getElementById('nextBtn');
+        btn.disabled = false;
+        btn.innerHTML = `<span>${editId ? 'Update Mod' : 'Publish Mod'}</span> <i class="fa-solid fa-paper-plane text-xs"></i>`;
+    }
+}
+
+        function resetWizard() {
+            editId = null;
+            currentStep = 1;
+            modFeatures = [];
+            uploadedImages = [null, null, null, null];
+            document.querySelectorAll('input').forEach(i => i.value = "");
+            document.querySelector('textarea').value = "";
+            for(let i=0; i<4; i++) removeImage(i);
+            renderFeatures();
+            document.querySelectorAll('.step-content').forEach(s => s.classList.remove('active'));
+            document.getElementById('step-1').classList.add('active');
+            updateProgress();
+        }
+
+        async function loadMods() {
+    const list = document.getElementById('admin-mod-list');
+    list.innerHTML = `<div class="col-span-full py-10 text-center text-gray-500">Loading database...</div>`;
+    
+    const user = auth.currentUser;
+    if (!user) {
+        list.innerHTML = `<div class="col-span-full py-10 text-center text-red-500">Unauthorized: Not logged in</div>`;
+        return;
+    }
+
+    const snapshot = await db.collection('mods')
+        .orderBy('updatedAt', 'desc')
+        .get();
+
+    list.innerHTML = "";
+
+snapshot.forEach(doc => {
+    const mod = doc.data();
+    const id = doc.id; 
+        list.innerHTML += `
+    <div class="bg-dark-800 border border-white/5 rounded-2xl overflow-hidden flex flex-col group hover:border-brand-red/30 transition-all">
+        <div class="h-24 bg-dark-700 relative">
+            <img src="${mod.images?.[0] || ''}" class="w-full h-full object-cover opacity-60">
+            <div class="absolute inset-0 bg-gradient-to-t from-dark-800 to-transparent"></div>
+            <span class="absolute top-2 right-2 text-[8px] font-bold px-2 py-0.5 rounded ${mod.status === 'approved' ? 'bg-green-500/20 text-green-500' : 'bg-orange-500/20 text-orange-500'}">
+                ${(mod.status || 'pending').toUpperCase()}
+            </span>
+        </div>
+        <div class="p-3">
+            <h5 class="text-xs font-bold text-white truncate">${mod.title}</h5>
+            <p class="text-[9px] text-gray-500">${mod.category} • ${mod.version}</p>
+            <div class="flex gap-2 mt-3">
+                <button onclick="editMod('${id}')" class="flex-1 py-2 bg-brand-red/10 text-brand-red rounded-lg text-[9px] font-bold hover:bg-brand-red hover:text-white transition-all">EDIT</button>
+                <button onclick="deleteMod('${id}', '${mod.title}')" class="w-10 py-2 bg-dark-700 text-red-500 rounded-lg text-[9px] hover:bg-red-500 hover:text-white transition-all"><i class="fa-solid fa-trash"></i></button>
+            </div>
+        </div>
+    </div>`;
+});
+}
+
+        async function deleteMod(id, title) {
+            if(confirm(`Hapus mod "${title}"?`)) {
+                await db.collection('mods').doc(id).delete();
+                logAction('delete', `Admin menghapus mod: ${title}`);
+                loadMods();
+                showToast("Mod telah dihapus");
+            }
+        }
+
+        /* --- NOTIFICATION LOGS --- */
+        async function logAction(type, message) {
+            await db.collection('notifications').add({
+                type,
+                message,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                read: false
+            });
+            loadNotifs();
+        }
+
+        async function loadNotifs() {
+    const list = document.getElementById('notif-list');
+
+    const snap = await db.collection('notifications')
+        .orderBy('timestamp', 'desc')
+        .limit(15)
+        .get();
+
+    list.innerHTML = "";
+
+    snap.forEach(doc => {
+        const n = doc.data();
+        const id = doc.id;
+
+        let actionButtons = "";
+
+        if (n.type === "admin_chat") {
+
+    actionButtons = `
+    <div class="flex gap-2 mt-3">
+
+        <button
+            onclick="openAdminChat('${n.chatId}')"
+            class="bg-brand-red text-white text-[10px] px-3 py-1.5 rounded-lg font-bold">
+            BALAS PESAN
+        </button>
+
+    </div>
+    `;
+
+} else if (n.type === "approval_request") {
+
+    actionButtons = `
+    <div class="flex gap-2 mt-3">
+
+        <button 
+            onclick="previewMod('${n.modId}')"
+            class="bg-blue-500 text-white text-[10px] px-3 py-1.5 rounded-lg font-bold hover:bg-blue-600 transition-all">
+            PREVIEW
+        </button>
+
+        <button 
+            onclick="approveMod('${n.modId}', '${id}')"
+            class="bg-green-500 text-white text-[10px] px-3 py-1.5 rounded-lg font-bold hover:bg-green-600 transition-all">
+            SETUJUI
+        </button>
+
+        <button 
+            onclick="rejectMod('${n.modId}', '${id}')"
+            class="bg-red-500 text-white text-[10px] px-3 py-1.5 rounded-lg font-bold hover:bg-red-600 transition-all">
+            TOLAK
+        </button>
+
+    </div>
+    `;
+}
+
+        list.innerHTML += `
+        <div class="bg-dark-800 border border-white/5 rounded-2xl p-4">
+            <div class="flex items-start justify-between gap-3">
+                <div>
+                    <p class="text-sm text-white font-medium">
+                        ${n.message || 'Notification'}
+                    </p>
+                    <p class="text-[10px] text-gray-500 mt-1">
+                        ${n.type || 'system'}
+                    </p>
+                </div>
+            </div>
+
+            ${actionButtons}
+        </div>
+        `;
+    });
+}
+
+        async function clearNotifs() {
+             const snap = await db.collection('notifications').get();
+             snap.forEach(d => d.ref.delete());
+             loadNotifs();
+        }
+        
+        async function approveMod(modId, notifId) {
+    try {
+        // 1. Update status mod jadi approved
+        await db.collection('mods').doc(modId).update({
+            status: "approved",
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        // 2. Hapus notifikasi
+        await db.collection('notifications').doc(notifId).delete();
+        
+        showToast("Mod disetujui dan telah tayang!");
+        loadNotifs();
+        if(currentTab === 'manage') loadMods(); // Refresh list mod jika sedang dibuka
+    } catch (err) {
+        showToast("Gagal menyetujui mod.");
+    }
+}
+
+async function rejectMod(modId, notifId) {
+    if (confirm("Yakin ingin menolak dan menghapus mod ini secara permanen?")) {
+        try {
+            // 1. Hapus mod dari database
+            await db.collection('mods').doc(modId).delete();
+            
+            // 2. Hapus notifikasi
+            await db.collection('notifications').doc(notifId).delete();
+            
+            showToast("Mod ditolak dan dihapus.");
+            loadNotifs();
+        } catch (err) {
+            showToast("Gagal memproses penolakan.");
+        }
+    }
+}
+
+/* --- MODAL PREVIEW ACTIONS --- */
+async function previewMod(modId) {
+    try {
+        showToast("Menyiapkan Preview...");
+        const doc = await db.collection('mods').doc(modId).get();
+        if (!doc.exists) return showToast("Data tidak ditemukan");
+        
+        const mod = doc.data();
+
+        // Bind Data ke Modal
+        document.getElementById('m-prev-title').innerText = mod.title;
+        document.getElementById('m-prev-cat').innerText = mod.category;
+        document.getElementById('m-prev-ver').innerText = mod.version || 'v1.0';
+        document.getElementById('m-prev-desc').innerText = mod.desc;
+        document.getElementById('m-prev-size').innerText = mod.size || '0 MB';
+        
+        // Image Preview (Ambil gambar pertama)
+        const mainImg = document.getElementById('m-prev-img');
+        if(mod.images && mod.images.length > 0) {
+            mainImg.src = mod.images[0];
+            mainImg.style.display = 'block';
+        } else {
+            mainImg.src = '';
+        }
+
+        // Feature Chips
+        const featContainer = document.getElementById('m-prev-features');
+        featContainer.innerHTML = (mod.features || []).map(f => `
+            <div class="bg-dark-800 border border-white/5 text-gray-300 px-3 py-1.5 rounded-xl text-[10px] flex items-center gap-2">
+                <i class="fa-solid fa-check text-brand-red"></i> ${f}
+            </div>
+        `).join('');
+
+        // Tampilkan Modal dengan Animasi
+        const modal = document.getElementById('preview-modal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        
+    } catch (err) {
+        console.error(err);
+        showToast("Gagal memuat preview");
+    }
+}
+
+function closePreviewModal() {
+    const modal = document.getElementById('preview-modal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+}
+
+        async function saveSettings() {
+    const btn = document.querySelector('#tab-settings button');
+    
+    // Ambil elemen
+    const elApproval = document.getElementById('set-approval');
+    const elLimit = document.getElementById('set-limit');
+    const elMaxSize = document.getElementById('set-maxsize');
+
+    try {
+        // 1. Feedback Visual
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Menyiapkan...';
+
+        // 2. Siapkan Data (Konversi ke Number agar valid di DB)
+        const settingsData = {
+            approvalRequired: elApproval.checked,
+            uploadLimitPerDay: parseInt(elLimit.value) || 0,
+            maxFileSizeMB: parseInt(elMaxSize.value) || 0,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        // 3. Simpan ke Firestore
+        await db.collection('settings').doc('global').set(settingsData, { merge: true });
+
+        // 4. Sukses
+        showToast("Konfigurasi platform berhasil diperbarui!");
+        console.log("Settings saved:", settingsData);
+
+    } catch (error) {
+        console.error("Gagal menyimpan settings:", error);
+        showToast("Gagal menyimpan: " + error.message);
+    } finally {
+        // 5. Kembalikan tombol ke semula
+        btn.disabled = false;
+        btn.innerText = "Update Settings";
+    }
+}
+
+        // GANTI FUNGSI LAMA DENGAN INI
+async function saveAnnouncement() {
+    const btn = document.getElementById('btn-save-announcement');
+    const text = document.getElementById('note-text').value;
+    const judul = document.getElementById('note-judul').value;
+    const link = document.getElementById('note-link').value;
+    const status = document.getElementById('note-status').value === 'active';
+
+    if(!text) return showToast("Teks pengumuman tidak boleh kosong!");
+
+    try {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Memproses...';
+
+        await db.collection('announcements').doc('main').set({
+    title: judul,
+    text: text,
+    link: link,
+    image: announcementImageData,
+    active: status,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+});
+
+        showToast("Announcement Berhasil Diperbarui!");
+        logAction('edit', `Admin memperbarui pengumuman broadcast`);
+    } catch (e) {
+        console.error(e);
+        showToast("Gagal menyimpan pengumuman");
+    } finally {
+        btn.disabled = false;
+        btn.innerText = "Simpan & Publikasikan";
+    }
+}
+
+async function loadAnnouncements() {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    try {
+        const snap = await db.collection('announcements').doc('main').get();
+        if (snap.exists) {
+            const data = snap.data();
+            document.getElementById('note-judul').value = data.title || "";
+            document.getElementById('note-text').value = data.text || "";
+            document.getElementById('note-link').value = data.link || "";
+            document.getElementById('note-status').value = data.active ? 'active' : 'inactive';
+            
+            if(data.image) {
+                announcementImageData = data.image;
+                const img = document.getElementById('note-image-preview');
+                img.src = data.image;
+                img.classList.remove('hidden');
+                document.getElementById('note-image-label').classList.add('hidden');
+                document.getElementById('note-image-del').classList.remove('hidden');
+            }
+        }
+    } catch (e) {
+        console.error("Error loading announcement:", e);
+        // Jangan tampilkan error jika hanya karena masalah koneksi sesaat
+    }
+}
+
+        /* --- UTILS --- */
+        function showToast(text) {
+            const t = document.getElementById('toast');
+            document.getElementById('toast-text').innerText = text;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+        
+function switchTab(tabId) {
+    // 1. Update State Global
+    currentTab = tabId;
+
+    // 2. Sembunyikan semua section di dalam tab-container
+    const sections = document.querySelectorAll('#tab-container section');
+    sections.forEach(s => s.classList.add('hidden'));
+
+    // 3. Tampilkan section yang dipilih
+    const activeSection = document.getElementById('tab-' + tabId);
+    if (activeSection) {
+        activeSection.classList.remove('hidden');
+    }
+
+    // 4. Update tampilan tombol sidebar (Nav Links)
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.remove('bg-white/10', 'text-white');
+        link.classList.add('text-gray-400');
+    });
+    
+    const activeBtn = document.getElementById('btn-' + tabId);
+    if (activeBtn) {
+        activeBtn.classList.remove('text-gray-400');
+        activeBtn.classList.add('bg-white/10', 'text-white');
+    }
+
+    // 5. Update Judul di Header
+    const titles = {
+        'upload': 'Upload & Edit Mod',
+        'manage': 'Database Mod',
+        'notif': 'Activity Logs',
+        'announcement': 'Broadcast Announcement',
+        'settings': 'Platform Settings',
+        'chat-admin': 'Support Live Chat'
+    };
+    
+    const titleElement = document.getElementById('current-tab-title');
+    if (titleElement) {
+        titleElement.innerText = titles[tabId] || 'Dashboard';
+    }
+    if (tabId === 'chat-admin') {
+    loadAdminChats();
+}
+}
+
+async function handleLogin() {
+    const email = document.getElementById('adminEmail').value;
+    const pass = document.getElementById('adminPassword').value;
+    const btn = document.getElementById('loginBtn');
+
+    if(!email || !pass) return showToast("Isi semua field!");
+    
+    try {
+        btn.innerText = "Authenticating...";
+        
+        // Paksa Firebase untuk mencoba koneksi ulang ke jaringan
+        await db.enableNetwork(); 
+        
+        const userCred = await auth.signInWithEmailAndPassword(email, pass);
+        
+        if (userCred.user) {
+            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('admin-dashboard').classList.remove('hidden');
+            
+            // Muat data secara paralel untuk efisiensi
+            await Promise.all([
+                loadSettings(),
+                loadAnnouncements(),
+                loadMods(),
+                loadNotifs()
+            ]);
+            
+            loadAdminChats();
+            showToast("Selamat datang, Admin!");
+        }
+    } catch(e) {
+        console.error("Login Error:", e);
+        // Jika error tetap 'unavailable', beri tahu user tentang koneksi
+        if (e.code === 'unavailable') {
+            showToast("Server tidak terjangkau. Periksa koneksi/AdBlocker.");
+        } else {
+            showToast("Login Gagal: " + e.message);
+        }
+        btn.innerText = "Masuk Ke Dashboard";
+    }
+}
+
+async function loadSettings() {
+    try {
+        // Hapus { source: 'server' } agar Firebase bisa mengambil dari cache jika offline
+        const snap = await db.collection('settings').doc('global').get();
+        
+        if (snap.exists) {
+            const data = snap.data();
+            if (document.getElementById('set-approval')) 
+                document.getElementById('set-approval').checked = data.approvalRequired || false;
+            if (document.getElementById('set-limit')) 
+                document.getElementById('set-limit').value = data.uploadLimitPerDay || 0;
+            if (document.getElementById('set-maxsize')) 
+                document.getElementById('set-maxsize').value = data.maxFileSizeMB || 0;
+        }
+    } catch (e) {
+        console.warn("Gagal memuat settings dari server, mencoba mode offline...", e);
+    }
+}
+
+// Fungsi untuk preview gambar announcement
+function handleAnnouncementImage(input) {
+    const file = input.files[0];
+    if (file) {
+        if (file.size > 800000) {
+            showToast("Gambar terlalu besar! Maks 800KB");
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            announcementImageData = e.target.result;
+            const img = document.getElementById('note-image-preview');
+            img.src = announcementImageData;
+            img.classList.remove('hidden');
+            document.getElementById('note-image-label').classList.add('hidden');
+            document.getElementById('note-image-del').classList.remove('hidden');
+        }
+        reader.readAsDataURL(file);
+    }
+}
+
+// Fungsi hapus gambar preview
+function removeAnnouncementImage() {
+    announcementImageData = null;
+    document.getElementById('note-image-input').value = "";
+    document.getElementById('note-image-preview').classList.add('hidden');
+    document.getElementById('note-image-label').classList.remove('hidden');
+    document.getElementById('note-image-del').classList.add('hidden');
+}
+
+async function loadAdminChats() {
+    if (unsubscribeChats) unsubscribeChats();
+    const list = document.getElementById('admin-chat-list');
+    if (!list) return;
+
+    unsubscribeChats = db.collection("chats")
+        .orderBy("updatedAt", "desc")
+        .onSnapshot((snap) => {
+            list.innerHTML = "";
+            snap.forEach((doc) => {
+                const data = doc.data();
+                list.innerHTML += `
+                    <button onclick="openAdminChat('${doc.id}')"
+                            class="w-full text-left p-3 rounded-2xl bg-dark-700 hover:bg-dark-600 transition-all">
+                        <div class="flex items-center justify-between gap-2">
+                            <div>
+                                <p class="text-sm font-bold text-white">${data.userName || 'Unknown User'}</p>
+                                <p class="text-[10px] text-gray-400 truncate">${data.lastMessage || 'Belum ada pesan'}</p>
+                            </div>
+                        </div>
+                    </button>`;
+            });
+        }, (error) => {
+            console.error("Firestore listen error:", error);
+            list.innerHTML = `<div class="text-center text-red-500">Gagal memuat chat: ${error.message}</div>`;
+        });
+}
+
+async function openAdminChat(chatId) {
+    // Lepas listener pesan sebelumnya
+    if (unsubscribeMessages) {
+        unsubscribeMessages();
+        unsubscribeMessages = null;
+    }
+
+    activeAdminChatId = chatId;
+    switchTab('chat-admin');
+    const box = document.getElementById('admin-chat-messages');
+    box.innerHTML = '<div class="text-center text-gray-500">Memuat pesan...</div>';
+
+    unsubscribeMessages = db.collection("chats")
+        .doc(chatId)
+        .collection("messages")
+        .orderBy("timestamp")
+        .onSnapshot((snap) => {
+            box.innerHTML = "";
+            if (snap.empty) {
+                box.innerHTML = '<div class="text-center text-gray-500">Belum ada pesan. Kirim balasan di bawah.</div>';
+                return;
+            }
+            snap.forEach((doc) => {
+                const msg = doc.data();
+                box.innerHTML += `
+                <div class="${msg.sender === 'admin' ? 'text-right' : 'text-left'}">
+                    <div class="inline-block px-4 py-2 rounded-2xl text-sm ${msg.sender === 'admin' ? 'bg-brand-red text-white' : 'bg-dark-700 text-gray-200'}">
+                        ${escapeHtml(msg.text)}
+                    </div>
+                </div>`;
+            });
+            box.scrollTop = box.scrollHeight;
+        }, (error) => {
+            console.error("Listener pesan error:", error);
+            box.innerHTML = `<div class="text-center text-red-500">Gagal memuat pesan: ${error.message}</div>`;
+        });
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+    }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+        return c;
+    });
+}
+
+async function sendAdminReply() {
+    const input = document.getElementById('adminReplyInput');
+    const text = input.value.trim();
+
+    // Validasi: pastikan teks tidak kosong dan ada chat yang sedang aktif
+    if (!text || !activeAdminChatId) {
+        if (!activeAdminChatId) showToast("Pilih user terlebih dahulu!");
+        return;
+    }
+
+    try {
+        // Baris "await db" yang salah tadi sudah dihapus
+        // 1. Tambahkan pesan ke sub-koleksi 'messages'
+        await db.collection("chats")
+            .doc(activeAdminChatId)
+            .collection("messages")
+            .add({
+                sender: "admin",
+                text: text,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+        // 2. Update pesan terakhir di dokumen utama 'chats'
+        await db.collection("chats")
+            .doc(activeAdminChatId)
+            .update({
+                lastMessage: text,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+        // Kosongkan input setelah berhasil terkirim
+        input.value = "";
+    } catch (err) {
+        console.error("Error sending reply:", err);
+        showToast("Gagal mengirim balasan");
+    }
+}
+
+window.addEventListener("DOMContentLoaded", async () => {
+
+    const params = new URLSearchParams(window.location.search);
+
+    // cek apakah mode preview
+    if(params.get("preview") === "true") {
+
+        // ambil data mod dari localStorage
+        const raw = localStorage.getItem("previewModData");
+
+        if(!raw) return;
+
+        const mod = JSON.parse(raw);
+
+        // delay kecil agar UI utama selesai render
+        setTimeout(() => {
+
+            // PANGGIL FUNCTION DETAIL CARD MILIK KAMU
+            openDetailCard(mod);
+
+        }, 500);
+    }
+});
+
+window.onload = () => {
+    db.enableNetwork().catch(err => console.error("Network enable failed", err));
+};
+</script>
+</body>
+</html>
