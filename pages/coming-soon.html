@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Notifikasi - HiFin Mods</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark: { 950: '#050505', 900: '#0f0f0f', 800: '#18181b' },
+                        brand: { red: '#ef4444', glow: 'rgba(239, 68, 68, 0.5)' }
+                    },
+                    fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
+                }
+            }
+        }
+    </script>
+
+    <link rel="stylesheet" href="../assets/css/coming-soon.css">
+</head>
+<body class="font-sans text-gray-200">
+
+    <!-- Konten Belakang (Simulasi Background Halaman Utama) -->
+    <div class="fixed inset-0 bg-dots z-0"></div>
+    <div class="relative z-0 min-h-screen flex items-center justify-center p-8 opacity-20 grayscale pointer-events-none">
+        <div class="text-center">
+            <h1 class="text-6xl font-bold mb-4">HiFin Dashboard</h1>
+            <p class="text-xl">Konten halaman utama sedang memuat...</p>
+        </div>
+    </div>
+
+    <!-- OVERLAY & MODAL -->
+    <div id="modalOverlay" class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 overlay">
+        
+        <!-- MODAL CARD -->
+        <div class="modal-container glass w-full max-w-[400px] rounded-[32px] p-8 relative overflow-hidden">
+            
+            <!-- Elemen Dekoratif -->
+            <div class="absolute -top-10 -right-10 w-32 h-32 bg-brand-red/10 blur-3xl rounded-full"></div>
+            
+            <!-- Konten Utama -->
+            <div class="relative z-10 flex flex-col items-center text-center">
+                
+                <!-- Ikon Warning Animasi -->
+                <div class="w-20 h-20 bg-brand-red/10 border border-brand-red/20 rounded-full flex items-center justify-center mb-8 pulse-red">
+                    <i class="fa-solid fa-code text-3xl text-brand-red animate-pulse"></i>
+                </div>
+
+                <!-- Teks Notifikasi -->
+                <h2 class="text-2xl font-bold text-white mb-3">Sedang dalam Proses Pengembangan</h2>
+                <div class="w-12 h-1 bg-brand-red rounded-full mb-6 opacity-50"></div>
+                
+                <p class="text-gray-400 text-sm leading-relaxed mb-10">
+                    Mohon maaf, <span class="text-white font-semibold">Fitur Ini</span> dalam proses pengembangan. Untuk sementara waktu, fitur tersebut belum tersedia bagi pengguna umum.
+                </p>
+
+                <!-- Action Button -->
+                <button onclick="closeModal()" class="group relative w-full overflow-hidden bg-brand-red py-4 rounded-2xl font-bold text-white shadow-[0_10px_20px_-5px_rgba(239,68,68,0.4)] transition-all active:scale-95 hover:brightness-110">
+                    <span class="relative z-10 flex items-center justify-center gap-2">
+                        Kembali <i class="fa-solid fa-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
+                    </span>
+                    <!-- Shine Effect -->
+                    <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+                </button>
+
+                <!-- Footer Kecil -->
+                <p class="mt-6 text-[10px] text-gray-600 uppercase tracking-widest font-bold">HiFin Dev &copy; 2026</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="../assets/js/coming-soon.js"></script>
+</body>
+</html>
