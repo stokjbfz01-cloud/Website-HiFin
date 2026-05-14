@@ -1,0 +1,34 @@
+body { background-color: #050505; color: #e4e4e7; scroll-behavior: smooth; }
+.glass { background: rgba(24, 24, 27, 0.6); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.05); }
+
+/* Animasi Muncul (Entrance) */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.reveal { opacity: 0; animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.delay-1 { animation-delay: 0.1s; }
+.delay-2 { animation-delay: 0.2s; }
+.delay-3 { animation-delay: 0.3s; }
+.delay-4 { animation-delay: 0.4s; }
+
+/* Hover Effects */
+.stat-card { transition: all 0.3s ease; }
+.stat-card:hover { transform: translateY(-5px); border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.02); }
+
+/* Profile Glow Animation */
+.avatar-glow { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); animation: pulse-red 2s infinite; }
+@keyframes pulse-red {
+    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6); }
+    70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+/* Chart Animation */
+.chart-path { stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: draw 2s ease-out forwards; }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+
+.custom-scroll::-webkit-scrollbar { width: 5px; }
+.custom-scroll::-webkit-scrollbar-track { background: transparent; }
+.custom-scroll::-webkit-scrollbar-thumb { background: #27272a; border-radius: 10px; }
