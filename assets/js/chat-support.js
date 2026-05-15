@@ -1,7 +1,4 @@
-/**
-         * LOGIKA CORE & API (DIPERTAHANKAN 100%)
-         */
-         const firebaseConfig = {
+const firebaseConfig = {
     apiKey: "AIzaSyBoGzExHCZvLNnLHggB2sbst0t4l-tc3Mk",
     authDomain: "mods-31307.firebaseapp.com",
     projectId: "mods-31307",
@@ -11,7 +8,9 @@
 };
 
 firebase.initializeApp(firebaseConfig);
-db.enablePersistence({ synchronizeTabs: true })
+const db = firebase.firestore();          // 1. Deklarasi dulu
+db.settings({ experimentalAutoDetectLongPolling: true }); // 2. Settings (jika ada)
+db.enablePersistence({ synchronizeTabs: true }) // 3. Baru panggil method-nya
     .catch((err) => {
         console.warn("Persistence tidak aktif:", err.code);
     });
@@ -22,7 +21,6 @@ db.enablePersistence({ synchronizeTabs: true })
         const aiChatHistory = [];    // Penampung chat AI (RAM)
         const adminChatHistory = []; // Penampung chat Admin (Firebase)
         const heroHTML = document.getElementById('hero').outerHTML; // Simpan template hero
-        const db = firebase.firestore();
         localStorage.removeItem("lumina_memory");
         let activeChatId = null;
         let unreadAdminCount = 0; // Counter pesan admin yang belum dibaca
