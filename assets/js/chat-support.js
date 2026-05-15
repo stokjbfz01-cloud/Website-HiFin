@@ -16,7 +16,7 @@ db.enablePersistence({ synchronizeTabs: true }) // 3. Baru panggil method-nya
     });
          
         const GROQ_API_KEY = "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";
-        const GROQ_MODEL = "llama-3.1-8b-instant";
+        const GROQ_MODEL = "llama-3.3-70b-versatile";
         let currentMode = "AI";
         const aiChatHistory = [];    // Penampung chat AI (RAM)
         const adminChatHistory = []; // Penampung chat Admin (Firebase)
@@ -662,8 +662,14 @@ Jawaban:
             aiStatus.style.display = 'none';
         }
 
-        async function fetchAIResponse(userText) {
+async function fetchAIResponse(userText) {
     showStatus("AI IS THINKING...");
+
+    // Ambil HANYA 4 pesan terakhir (bukan 10) karena system prompt sudah sangat panjang
+    const conversationMessages = aiChatHistory.slice(-4).map(msg => ({
+        role: msg.role === 'user' ? 'user' : 'assistant',
+        content: msg.text
+    }));
 
     try {
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -676,28 +682,37 @@ Jawaban:
                 model: GROQ_MODEL,
                 messages: [
                     { role: "system", content: AI_PERSONA },
-                    { role: "user", content: buildPrompt(userText) }
+                    ...conversationMessages
                 ],
                 temperature: 0.75,
-                max_tokens: 1400
+                max_tokens: 800  // Turunkan dari 1400 → 800 untuk beri ruang context
             })
         });
 
         const data = await response.json();
-        const aiText = data.choices?.[0]?.message?.content || "System Alert: Neural link broken.";
-        
+
+        // Tampilkan error Groq yang sebenarnya di console untuk debugging
+        if (data.error) {
+            console.error("Groq API Error:", data.error);
+            hideStatus();
+            appendMessage('ai', "Maaf, sistem sedang sibuk. Coba lagi ya.");
+            return;
+        }
+
+        const aiText = data.choices?.[0]?.message?.content
+            || "System Alert: Neural link broken.";
+
         hideStatus();
-        appendMessage('ai', aiText); // Hanya tampil di UI, tidak disimpan ke DB
+        appendMessage('ai', aiText);
 
     } catch (error) {
+        console.error("Fetch error:", error);
         hideStatus();
         appendMessage('ai', "Error: Gagal mengakses AI.");
     }
 }
 
-// Tampilkan toast notifikasi balasan admin
 function showAdminNotif(text) {
-    // Buat toast jika belum ada
     let toast = document.getElementById('admin-toast');
     if (!toast) {
         toast = document.createElement('div');
