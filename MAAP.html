@@ -521,6 +521,8 @@ firebase.initializeApp(firebaseConfig);
     const storage = firebase.storage();
 
     db.settings({ experimentalAutoDetectLongPolling: true });
+    db.enablePersistence({ synchronizeTabs: true })
+    .catch((err) => console.warn("Admin persistence:", err.code));
     
     auth.onAuthStateChanged(async (user) => {
     if (user) {
@@ -1379,8 +1381,7 @@ async function loadAdminChats() {
         });
 }
 
-async function openAdminChat(chatId) {
-    // Lepas listener pesan sebelumnya
+function openAdminChat(chatId) {
     if (unsubscribeMessages) {
         unsubscribeMessages();
         unsubscribeMessages = null;
@@ -1388,32 +1389,55 @@ async function openAdminChat(chatId) {
 
     activeAdminChatId = chatId;
     switchTab('chat-admin');
+
     const box = document.getElementById('admin-chat-messages');
-    box.innerHTML = '<div class="text-center text-gray-500">Memuat pesan...</div>';
+    box.innerHTML = '<div class="text-center text-gray-500 text-xs py-4">Memuat pesan...</div>';
 
     unsubscribeMessages = db.collection("chats")
         .doc(chatId)
         .collection("messages")
         .orderBy("timestamp")
-        .onSnapshot((snap) => {
-            box.innerHTML = "";
-            if (snap.empty) {
-                box.innerHTML = '<div class="text-center text-gray-500">Belum ada pesan. Kirim balasan di bawah.</div>';
-                return;
+        .onSnapshot({ includeMetadataChanges: false }, (snap) => {
+
+            // Jika render awal (full snapshot)
+            if (!snap.metadata.hasPendingWrites && box.querySelector('.text-center')) {
+                box.innerHTML = "";
             }
-            snap.forEach((doc) => {
-                const msg = doc.data();
-                box.innerHTML += `
-                <div class="${msg.sender === 'admin' ? 'text-right' : 'text-left'}">
-                    <div class="inline-block px-4 py-2 rounded-2xl text-sm ${msg.sender === 'admin' ? 'bg-brand-red text-white' : 'bg-dark-700 text-gray-200'}">
-                        ${escapeHtml(msg.text)}
-                    </div>
-                </div>`;
+
+            snap.docChanges().forEach((change) => {
+                if (change.type === "added") {
+                    const msg = change.doc.data();
+                    const isAdmin = msg.sender === "admin";
+
+                    if (isAdmin) {
+                        // ── Dedup: Hapus bubble optimistic yang matching ──
+                        const optimistic = box.querySelector(`.optimistic-msg[data-text="${CSS.escape(msg.text)}"]`);
+                        if (optimistic) {
+                            // Replace opacity-80 jadi full opacity (konfirmasi terkirim)
+                            const bubble = optimistic.querySelector('div');
+                            bubble.classList.remove('opacity-80');
+                            optimistic.classList.remove('optimistic-msg');
+                            return; // Jangan render duplikat
+                        }
+                    }
+
+                    // Render pesan baru (dari user atau admin lain device)
+                    const wrapper = document.createElement('div');
+                    wrapper.className = isAdmin ? 'text-right' : 'text-left';
+                    wrapper.innerHTML = `
+                        <div class="inline-block px-4 py-2 rounded-2xl text-sm 
+                            ${isAdmin ? 'bg-brand-red text-white' : 'bg-dark-700 text-gray-200'}">
+                            ${escapeHtml(msg.text)}
+                        </div>
+                    `;
+                    box.appendChild(wrapper);
+                    box.scrollTop = box.scrollHeight;
+                }
             });
-            box.scrollTop = box.scrollHeight;
+
         }, (error) => {
             console.error("Listener pesan error:", error);
-            box.innerHTML = `<div class="text-center text-red-500">Gagal memuat pesan: ${error.message}</div>`;
+            box.innerHTML = `<div class="text-center text-red-500">Gagal: ${error.message}</div>`;
         });
 }
 
@@ -1433,38 +1457,54 @@ async function sendAdminReply() {
     const input = document.getElementById('adminReplyInput');
     const text = input.value.trim();
 
-    // Validasi: pastikan teks tidak kosong dan ada chat yang sedang aktif
     if (!text || !activeAdminChatId) {
         if (!activeAdminChatId) showToast("Pilih user terlebih dahulu!");
         return;
     }
 
-    try {
-        // Baris "await db" yang salah tadi sudah dihapus
-        // 1. Tambahkan pesan ke sub-koleksi 'messages'
-        await db.collection("chats")
-            .doc(activeAdminChatId)
-            .collection("messages")
-            .add({
-                sender: "admin",
-                text: text,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            });
+    // ── OPTIMISTIC UI: Tampilkan pesan SEKETIKA ke UI admin ──
+    // Ini terjadi di frame yang sama, 0ms delay
+    const box = document.getElementById('admin-chat-messages');
+    const tempBubble = document.createElement('div');
+    tempBubble.className = 'text-right optimistic-msg'; // Class khusus untuk tracking
+    tempBubble.dataset.text = text; // Simpan teks untuk dedup nanti
+    tempBubble.innerHTML = `
+        <div class="inline-block px-4 py-2 rounded-2xl text-sm bg-brand-red text-white opacity-80">
+            ${escapeHtml(text)}
+        </div>
+    `;
+    box.appendChild(tempBubble);
+    box.scrollTop = box.scrollHeight;
 
-        // 2. Update pesan terakhir di dokumen utama 'chats'
-        await db.collection("chats")
-            .doc(activeAdminChatId)
-            .update({
-                lastMessage: text,
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
+    // Kosongkan input SEGERA
+    input.value = "";
 
-        // Kosongkan input setelah berhasil terkirim
-        input.value = "";
-    } catch (err) {
-        console.error("Error sending reply:", err);
-        showToast("Gagal mengirim balasan");
-    }
+    // ── BATCH WRITE: 1 request ke server, bukan 2 ──
+    const batch = db.batch();
+
+    const msgRef = db.collection("chats")
+        .doc(activeAdminChatId)
+        .collection("messages")
+        .doc(); // Auto-ID
+
+    batch.set(msgRef, {
+        sender: "admin",
+        text: text,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    batch.update(db.collection("chats").doc(activeAdminChatId), {
+        lastMessage: text,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    // Fire-and-forget
+    batch.commit().catch(err => {
+        console.error("Reply batch error:", err);
+        // Jika gagal, beri visual feedback pada bubble
+        tempBubble.querySelector('div').classList.add('border', 'border-red-500');
+        showToast("Gagal mengirim, coba lagi");
+    });
 }
 
 window.addEventListener("DOMContentLoaded", async () => {
