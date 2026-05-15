@@ -11,6 +11,10 @@
 };
 
 firebase.initializeApp(firebaseConfig);
+db.enablePersistence({ synchronizeTabs: true })
+    .catch((err) => {
+        console.warn("Persistence tidak aktif:", err.code);
+    });
          
         const GROQ_API_KEY = "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";
         const GROQ_MODEL = "llama-3.1-8b-instant";
@@ -70,54 +74,41 @@ function renderHistoryBatch(messages) {
 }
 
 async function createOrOpenSupportChat(userMessage) {
-    try {
-        let savedChatId = localStorage.getItem("support_chat_id");
-
-        if(!savedChatId) {
-            const roomRef = await db.collection("chats").add({
-                userName: "User HiFin",
-                lastMessage: userMessage,
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            savedChatId = roomRef.id;
-            localStorage.setItem("support_chat_id", savedChatId);
-        }
-
-        activeChatId = savedChatId;
-
-        await db.collection("chats").doc(savedChatId).collection("messages").add({
-            sender: "user",
-            text: userMessage,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
-
-        await db.collection("chats").doc(savedChatId).update({
-            lastMessage: userMessage,
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-
-        await db.collection("notifications").add({
-            type: "admin_chat",
-            chatId: savedChatId,
-            message: `Pesan baru dari user: ${userMessage}`,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
-
-        // ── BARU: simpan pesan user ke cache lokal ──
-        const newMsg = {
-            role: 'user',
-            text: userMessage,
-            mode: "ADMIN",
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        };
-        const current = loadChatCache();
-        current.push(newMsg);
-        saveChatCache(current);
-
-    } catch(err) {
-        console.error(err);
+    if (!activeChatId) {
+        await initChatRoom();
     }
+    const savedChatId = activeChatId;
+    const newMsg = {
+        role: 'user',
+        text: userMessage,
+        mode: "ADMIN",
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+    const current = loadChatCache();
+    current.push(newMsg);
+    saveChatCache(current);
+    const batch = db.batch();
+    const msgRef = db.collection("chats")
+        .doc(savedChatId)
+        .collection("messages")
+        .doc(); // Auto-ID
+
+    batch.set(msgRef, {
+        sender: "user",
+        text: userMessage,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    batch.update(db.collection("chats").doc(savedChatId), {
+        lastMessage: userMessage,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    batch.commit().catch(err => console.error("Batch commit error:", err));
+    db.collection("notifications").add({
+        type: "admin_chat",
+        chatId: savedChatId,
+        message: `Pesan baru dari user: ${userMessage}`,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    }).catch(err => console.error("Notif error:", err));
 }
     
         const chatMemory = [];
@@ -617,7 +608,7 @@ Jawaban:
 
     if (currentMode === "ADMIN") {
         brandName.innerHTML = "HiFin";
-        clearAdminBadge(); // ← TAMBAH INI: hapus badge saat masuk ADMIN
+        clearAdminBadge(); //  TAMBAH INI: hapus badge saat masuk ADMIN
     } else {
         brandName.innerHTML = 'LUMINA<span>.AI</span>';
     }
@@ -740,51 +731,54 @@ function updateAdminBadge() {
     }
 }
 
-// Reset badge saat user buka mode ADMIN
 function clearAdminBadge() {
     unreadAdminCount = 0;
     updateAdminBadge();
 }
-        
-        //  Selalu render pesan admin
+
 function listenAdminReply() {
-    if(!activeChatId) return;
+    if (!activeChatId) return;
     db.collection("chats")
-    .doc(activeChatId)
-    .collection("messages")
-    .orderBy("timestamp")
-    .onSnapshot((snap) => {
-        snap.docChanges().forEach((change) => {
-            if(change.type === "added") {
-                const msg = change.doc.data();
-                if(msg.sender === "admin") {
-                    const exists = adminChatHistory.some(m => m.text === msg.text);
-                    if(!exists) {
-                        const newMsg = {
-                            role: 'ai',
-                            text: msg.text,
-                            mode: "ADMIN",
-                            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                        };
-                        adminChatHistory.push(newMsg);
+        .doc(activeChatId)
+        .collection("messages")
+        .orderBy("timestamp")
+        .onSnapshot({ includeMetadataChanges: false }, (snap) => {
+            snap.docChanges().forEach((change) => {
+                if (change.type === "added") {
+                    const msg = change.doc.data();
+                    if (msg.sender === "admin") {
+                        const exists = adminChatHistory.some(m => m.text === msg.text);
+                        if (!exists) {
+                            const newMsg = {
+                                role: 'ai',
+                                text: msg.text,
+                                mode: "ADMIN",
+                                time: new Date().toLocaleTimeString([], {
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                })
+                            };
+                            adminChatHistory.push(newMsg);
 
-                        // ── BARU: simpan pesan admin ke cache ──
-                        const current = loadChatCache();
-                        current.push(newMsg);
-                        saveChatCache(current);
+                            // Update cache
+                            const current = loadChatCache();
+                            current.push(newMsg);
+                            saveChatCache(current);
 
-                        if(currentMode === "ADMIN") {
-                            renderToUI("ai", msg.text, "ADMIN");
-                        } else {
-                            unreadAdminCount++;
-                            updateAdminBadge();
-                            showAdminNotif(msg.text);
+                            if (currentMode === "ADMIN") {
+                                renderToUI("ai", msg.text, "ADMIN");
+                            } else {
+                                unreadAdminCount++;
+                                updateAdminBadge();
+                                showAdminNotif(msg.text);
+                            }
                         }
                     }
                 }
-            }
+            });
+        }, (error) => {
+            console.error("Listener error:", error);
         });
-    });
 }
 
         sendBtn.addEventListener('click', handleMessage);
@@ -812,7 +806,7 @@ if (savedChatId) {
     if (!savedChatId) return;
     activeChatId = savedChatId;
 
-    // ── STEP A: Tampilkan cache INSTAN (0ms) ──
+    //  STEP A: Tampilkan cache INSTAN (0ms) 
     const cached = loadChatCache();
     if (cached.length > 0) {
         cached.forEach(msg => {
@@ -824,7 +818,7 @@ if (savedChatId) {
         }
     }
 
-    // ── STEP B: Sync Firestore di background ──
+    //  STEP B: Sync Firestore di background 
     try {
         const snapshot = await db.collection("chats")
             .doc(activeChatId)
@@ -863,7 +857,7 @@ if (savedChatId) {
         console.warn("Sync Firestore gagal, pakai cache:", err);
     }
 
-    // ── STEP C: Aktifkan realtime listener ──
+    //  STEP C: Aktifkan realtime listener 
     setTimeout(scrollToBottom, 20); 
     listenAdminReply();
 }
@@ -924,5 +918,30 @@ function renderToUI(role, text, mode) {
     scroller.appendChild(group);
 }
 
+async function initChatRoom() {
+    let savedChatId = localStorage.getItem("support_chat_id");
+    if (savedChatId) {
+        activeChatId = savedChatId;
+        return; // Sudah ada, tidak perlu buat baru
+    }
+
+    try {
+        const roomRef = await db.collection("chats").add({
+            userName: "User HiFin",
+            lastMessage: "",
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        activeChatId = roomRef.id;
+        localStorage.setItem("support_chat_id", roomRef.id);
+    } catch (err) {
+        console.error("Gagal init room:", err);
+    }
+}
+
+initChatRoom().then(() => {
+    listenAdminReply();
+});
+
 loadAdminHistory();
-localStorage.removeItem("lumina_memory"); 
+localStorage.removeItem("lumina_memory");
