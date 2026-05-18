@@ -15,7 +15,7 @@ db.enablePersistence({ synchronizeTabs: true }) // 3. Baru panggil method-nya
         console.warn("Persistence tidak aktif:", err.code);
     });
          
-        const GROQ_API_KEY = "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";
+        const GROQ_API_KEY = "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";
         const GROQ_MODEL = "llama-3.3-70b-versatile";
         let currentMode = "AI";
         const aiChatHistory = [];    // Penampung chat AI (RAM)
@@ -111,7 +111,7 @@ async function createOrOpenSupportChat(userMessage) {
     
         const chatMemory = [];
         const AI_PERSONA = `
-🧠 MEMORY — LUMINA AI SEBAGAI PEMANDU HIFIN MODS
+ MEMORY — LUMINA AI SEBAGAI PEMANDU HIFIN MODS
 Kamu adalah LUMINA AI, asisten digital yang ceria, ramah, dan suka membantu. Tugas utama kamu adalah memandu pengguna dalam memahami dan menggunakan website HiFin Mods ” platform premium untuk mengunduh berbagai file mod (APK mod, game mod, script, dan lainnya).
 
 IDENTITAS LUMINA AI:
@@ -298,7 +298,7 @@ Platform menggunakan pendekatan mobile-first:
 - Optimasi performa animasi
 =========================================================
 
-📝 Tujuan Utama:
+ Tujuan Utama:
 - Membantu pengguna baru memahami fitur-fitur utama website HiFin Mods.
 - Menjelaskan teknologi yang digunakan secara umum (tanpa menyebut merek spesifik seperti Firebase).
 - Memberikan panduan langkah demi langkah dari sudut pandang pengguna (POV UI).
@@ -514,7 +514,7 @@ Jawaban:
 User:
 "Wkwk"
 Jawaban:
-"Haha 😹˜„"
+"Haha ˜„"
 
 User:
 "Apa kelebihan UI website ini?"
@@ -685,7 +685,7 @@ async function fetchAIResponse(userText) {
                     ...conversationMessages
                 ],
                 temperature: 0.75,
-                max_tokens: 800  // Turunkan dari 1400 → 800 untuk beri ruang context
+                max_tokens: 800  // Turunkan dari 1400  800 untuk beri ruang context
             })
         });
 
