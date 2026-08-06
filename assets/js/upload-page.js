@@ -1,10 +1,11 @@
 const firebaseConfig = {
-  apiKey: "AIzaSyBoGzExHCZvLNnLHggB2sbst0t4l-tc3Mk",
-  authDomain: "mods-31307.firebaseapp.com",
-  projectId: "mods-31307",
-  storageBucket: "mods-31307.appspot.com",
-  messagingSenderId: "913890186204",
-  appId: "1:913890186204:web:4a652535f0fba62bda7519"
+  apiKey: "AIzaSyA4ZSKMQNJ9iLTfcEFSGwU2DjrNYxWB-kc",
+  authDomain: "database-new-4545d.firebaseapp.com",
+  projectId: "database-new-4545d",
+  storageBucket: "database-new-4545d.firebasestorage.app",
+  messagingSenderId: "12397904727",
+  appId: "1:12397904727:web:9e0e5827c58e9e52d87412",
+  measurementId: "G-Z4VP0N9VJJ"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -183,7 +184,7 @@ function handleSlotUpload(inputEl, index) {
 
     // Validasi ukuran (karena Base64 berat di database, batasi misal 800KB)
 if (file.size > 1000000) {
-    showToast("Gambar terlalu besar! Maksimal 150KB per slot");
+    showToast("Gambar terlalu besar! Maksimal dibawah 1MB per slot");
     inputEl.value = "";
     return;
 }
