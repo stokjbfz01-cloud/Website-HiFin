@@ -1,10 +1,11 @@
 const firebaseConfig = {
-    apiKey: "AIzaSyBoGzExHCZvLNnLHggB2sbst0t4l-tc3Mk",
-    authDomain: "mods-31307.firebaseapp.com",
-    projectId: "mods-31307",
-    storageBucket: "mods-31307.appspot.com",
-    messagingSenderId: "913890186204",
-    appId: "1:913890186204:web:4a652535f0fba62bda7519"
+  apiKey: "AIzaSyA4ZSKMQNJ9iLTfcEFSGwU2DjrNYxWB-kc",
+  authDomain: "database-new-4545d.firebaseapp.com",
+  projectId: "database-new-4545d",
+  storageBucket: "database-new-4545d.firebasestorage.app",
+  messagingSenderId: "12397904727",
+  appId: "1:12397904727:web:9e0e5827c58e9e52d87412",
+  measurementId: "G-Z4VP0N9VJJ"
 };
 
 // Inisialisasi
@@ -129,27 +130,26 @@ function renderTrending(data) {
         const img = mod.images?.[0] || 'https://placehold.co/300';
         const card = document.createElement("div");
         // Inject Premium Classes
-        card.className = "mod-card shrink-0 w-[160px] glass-panel rounded-[24px] overflow-hidden relative group cursor-pointer transition-all duration-500 ease-out hover:-translate-y-1.5 hover:border-brand-red/30 hover:shadow-glow-red border border-white/5";
+        card.className = "mod-card shrink-0 w-[220px] glass-panel rounded-[24px] overflow-hidden relative group cursor-pointer transition-all duration-500 ease-out hover:-translate-y-1.5 hover:border-brand-red/30 hover:shadow-glow-red border border-white/5";
         card.onclick = () => openDetail(mod.id);
-        
-        card.innerHTML = `
-            <div class="absolute top-3 left-3 z-20 bg-black/70 backdrop-blur-md text-brand-glow text-[8px] font-bold px-2 py-1.5 rounded-md uppercase tracking-wider border border-white/10 shadow-glass flex items-center gap-1">
-                <span class="w-1.5 h-1.5 rounded-full bg-brand-glow animate-pulse"></span>
-                ${mod.category || "UNKNOWN"}
-            </div>
-            
-            <div class="h-[170px] w-full relative overflow-hidden">
-                <img 
-    src="${img}" 
-    loading="lazy" 
-    decoding="async" 
-    fetchpriority="low" 
-    class="w-full h-full object-cover transform transition duration-[800ms] ease-out group-hover:scale-110 group-hover:rotate-1"
->
-                <div class="absolute inset-0 bg-gradient-to-t from-dark-800 via-dark-800/40 to-transparent"></div>
-                <div class="absolute inset-0 bg-brand-red/0 group-hover:bg-brand-red/10 transition duration-500"></div>
-            </div>
-            
+card.innerHTML = `
+    <div class="absolute top-3 left-3 z-20 bg-black/70 backdrop-blur-md text-brand-glow text-[8px] font-bold px-2 py-1.5 rounded-md uppercase tracking-wider border border-white/10 shadow-glass flex items-center gap-1">
+        <span class="w-1.5 h-1.5 rounded-full bg-brand-glow animate-pulse"></span>
+        ${mod.category || "UNKNOWN"}
+    </div>
+
+    <div class="aspect-[16/9] w-full relative overflow-hidden">
+        <img
+            src="${img}"
+            loading="lazy"
+            decoding="async"
+            fetchpriority="low"
+            class="w-full h-full object-cover object-center transform transition duration-[800ms] ease-out group-hover:scale-105"
+        >
+        <div class="absolute inset-0 bg-gradient-to-t from-dark-800 via-dark-800/40 to-transparent"></div>
+        <div class="absolute inset-0 bg-brand-red/0 group-hover:bg-brand-red/10 transition duration-500"></div>
+    </div>
+
             <div class="p-4 relative z-10 -mt-10">
                 <h4 class="font-display font-bold text-[13px] text-white mb-2 line-clamp-2 drop-shadow-md leading-tight group-hover:text-brand-glow transition-colors">${mod.title}</h4>
                 <div class="flex items-center justify-between mt-3">
