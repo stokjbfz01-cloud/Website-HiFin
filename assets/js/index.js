@@ -307,8 +307,6 @@ function openDetail(modId) {
     // Download Button Logic
     const downloadBtn = document.getElementById('downloadBtn');
     downloadBtn.onclick = async () => {
-        if (!mod.link) return alert("Link tidak tersedia");
-        downloadBtn.onclick = async () => {
     if (!mod.link) {
         return alert("Link tidak tersedia");
     }
@@ -316,8 +314,6 @@ function openDetail(modId) {
     try {
         if (navigator.share) {
             await navigator.share({
-                title: mod.title,
-                text: "Download " + mod.title,
                 url: mod.link
             });
         } else {
