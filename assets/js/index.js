@@ -308,11 +308,30 @@ function openDetail(modId) {
     const downloadBtn = document.getElementById('downloadBtn');
     downloadBtn.onclick = async () => {
         if (!mod.link) return alert("Link tidak tersedia");
-        downloadFile(mod.link);
-        db.collection("mods").doc(modId).update({
-            downloads: firebase.firestore.FieldValue.increment(1)
-        }).catch(err => console.error("Stat error:", err));
-    };
+        downloadBtn.onclick = async () => {
+    if (!mod.link) {
+        return alert("Link tidak tersedia");
+    }
+
+    try {
+        if (navigator.share) {
+            await navigator.share({
+                title: mod.title,
+                text: "Download " + mod.title,
+                url: mod.link
+            });
+        } else {
+            window.open(mod.link, '_blank');
+        }
+
+    } catch (err) {
+        console.log("Share dibatalkan:", err);
+    }
+
+    db.collection("mods").doc(modId).update({
+        downloads: firebase.firestore.FieldValue.increment(1)
+    }).catch(err => console.error("Stat error:", err));
+};
 
     // 3. EKSEKUSI ANIMASI (Trik 60fps)
     // Pastikan panel di posisi scroll teratas sebelum muncul
@@ -330,24 +349,6 @@ function openDetail(modId) {
     });
 }
 
-function downloadFile(url){
-
-    // Mode APK
-    if(window.Android && Android.openExternal){
-
-        Android.openExternal(url);
-        return;
-
-    }
-
-
-    // Mode Website
-    const a = document.createElement("a");
-    a.href = url;
-    a.target = "_blank";
-    a.click();
-
-}
 
 function closeDetail() {
     const panel = document.getElementById('detailPanel');
