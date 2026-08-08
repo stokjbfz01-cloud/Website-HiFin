@@ -308,7 +308,7 @@ function openDetail(modId) {
     const downloadBtn = document.getElementById('downloadBtn');
     downloadBtn.onclick = async () => {
         if (!mod.link) return alert("Link tidak tersedia");
-        window.open(mod.link, '_blank', 'noopener,noreferrer');
+        downloadFile(mod.link);
         db.collection("mods").doc(modId).update({
             downloads: firebase.firestore.FieldValue.increment(1)
         }).catch(err => console.error("Stat error:", err));
@@ -330,6 +330,24 @@ function openDetail(modId) {
     });
 }
 
+function downloadFile(url){
+
+    // Mode APK
+    if(window.Android && Android.openExternal){
+
+        Android.openExternal(url);
+        return;
+
+    }
+
+
+    // Mode Website
+    const a = document.createElement("a");
+    a.href = url;
+    a.target = "_blank";
+    a.click();
+
+}
 
 function closeDetail() {
     const panel = document.getElementById('detailPanel');
