@@ -373,17 +373,49 @@ function openDetail(modId) {
         });
     }
 
-    // DOWNLOAD ACTION (DIPERTAHANKAN)
-    document.getElementById('downloadBtn').onclick = async () => {
-        if (mod.link) {
-            try {
-                await db.collection("mods").doc(modId).update({
-                    downloads: firebase.firestore.FieldValue.increment(1)
-                });
-                window.open(mod.link);
-            } catch (err) { console.error(err); window.open(mod.link, '_blank', 'noopener,noreferrer'); }
+    // DOWNLOAD ACTION (WEB SHARE SUPPORT)
+document.getElementById('downloadBtn').onclick = async () => {
+
+    if (!mod.link) {
+        return alert("Link tidak tersedia");
+    }
+
+    try {
+
+        if (navigator.share) {
+
+            await navigator.share({
+                title: mod.title,
+                text: "Download " + mod.title,
+                url: mod.link
+            });
+
+        } else {
+
+            window.open(
+                mod.link,
+                '_blank',
+                'noopener,noreferrer'
+            );
+
         }
-    };
+
+
+    } catch (err) {
+
+        console.log("Share dibatalkan:", err);
+
+    }
+
+    // Tambah statistik download
+    db.collection("mods")
+    .doc(modId)
+    .update({
+        downloads: firebase.firestore.FieldValue.increment(1)
+    })
+    .catch(err => console.error("Stat error:", err));
+
+};
 
     // ANIMATION OPEN (Lebih Smooth)
     document.body.classList.add('detail-open');
